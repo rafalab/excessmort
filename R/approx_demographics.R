@@ -1,0 +1,35 @@
+# -- Function to interpolate demographic data
+approx_demographics <- function(demo, first_day, last_day)
+{
+  ################## ----- PARAMETERS ----- ##################
+  # 1. demo      : Dataframe from the function getDemographics()
+  # 2. first_day : First day of interpolating sequence
+  # 3. last_day  : Last day of interpolating sequence
+
+  # -- Defining xout days
+  first_day <- as.Date(first_day)
+  last_day  <- as.Date(last_day)
+  days <- seq(first_day, last_day, by=1)
+
+  # -- Function used within approxDemographics to interpolate population
+  do_approx <- function(tab, days){
+
+    # -- Create date variable
+    tab$date <- make_date(tab$year, 7, 1)
+
+    # -- Variables to be return
+    return(tibble(date       = days,
+                  population = approx(tab$date, tab$population, xout=days, rule=2)$y))
+  }
+
+  # -- Interpolating population
+  demo <- demo %>%
+    group_by(sex, agegroup, race) %>%
+    do(do_approx(., days)) %>%
+    ungroup() %>%
+    select(date, sex, race, agegroup, population)
+
+  return(demo)
+}
+
+

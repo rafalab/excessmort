@@ -25,7 +25,7 @@ compute_expected <- function(counts, exclude = NULL,
   dfs <- round(length(unique(year(counts$date[!counts$date %in% out_dates])))*trend.nknots)
 
   # make trend basis (includes intercept)
-  x_t <- ns(as.numeric(counts$date), df = dfs + 1, intercept = TRUE)
+  x_t <- splines::ns(as.numeric(counts$date), df = dfs + 1, intercept = TRUE)
   i_t <- 1:ncol(x_t)
 
   #for harmonic model

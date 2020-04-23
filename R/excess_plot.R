@@ -7,7 +7,7 @@
 excess_plot <- function(fit, title = "", ylim = NULL,
                         center = c("zero", "fit"),
                         show.data = TRUE,
-                        allpha = 0.01){
+                        alpha = 0.01){
 
   requireNamespace("ggplot2")
 
@@ -15,7 +15,7 @@ excess_plot <- function(fit, title = "", ylim = NULL,
 
   if(match.arg(center) == "zero") center <- 0 else center <- fit$fitted
 
-  p <- with(fit, data.fram(date = date,
+  p <- with(fit, data.frame(date = date,
                         y = 100 * resid,
                         increase = 100 * fitted,
                         lower = 100 * (center - z*se),

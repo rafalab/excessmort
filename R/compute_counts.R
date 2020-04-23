@@ -2,49 +2,49 @@
 #' @export
 #' @import dplyr
 
-compute_counts <- function(dat, group_by = NULL, demo = NULL,
-                           date_column = "date",
-                           age_column = "age",
-                           agegroup_column = "agegroup",
-                           age_breaks = NULL){
+compute_counts <- function(dat, group.by = NULL, demo = NULL,
+                           date = "date",
+                           age = "age",
+                           agegroup = "agegroup",
+                           breaks = NULL){
 
-  if(!is.character(group_by) & !is.null(group_by)) stop("group_by needs to be a character verctor or NULL.")
+  if(!is.character(group.by) & !is.null(group.by)) stop("group.by needs to be a character verctor or NULL.")
 
 
   ## prepare demo if it is provided
-  if(!is.null(demo) & (agegroup_column %in% group_by)){
-    names(demo)[names(demo) == agegroup_column] <- "agegroup"
-    if(is.null(age_breaks)){
+  if(!is.null(demo) & (agegroup %in% group.by)){
+    names(demo)[names(demo) == agegroup] <- "agegroup"
+    if(is.null(breaks)){
       start <-grep("\\d+", demo$agegroup, value = TRUE) %>% unique() %>% as.numeric() %>% sort()
-      age_breaks <- c(start, Inf)
+      breaks <- c(start, Inf)
     } else{
-      demo <- collapse_age_dist(demo, age_breaks)
+      demo <- collapse_age_dist(demo, breaks)
     }
   }
 
-  if(agegroup_column %in% group_by){
-    if(is.null(age_breaks)){
+  if(agegroup %in% group.by){
+    if(is.null(breaks)){
       stop("Need to provide age breaks or a demographics table")
     } else{
-      if(age_column %in% names(dat)){
-        dat$agegroup <-group_age(dat[[age_column]], age_breaks)
-      } else stop(age_column, "not a column in dat")
+      if(age %in% names(dat)){
+        dat$agegroup <-group_age(dat[[age]], breaks)
+      } else stop(age, "not a column in dat")
     }
   }
-  if(!is.null(group_by))
-    if(!all(group_by %in% names(dat))) stop("group_by needs to be a subset of", setdiff(names(dat), date_column))
+  if(!is.null(group.by))
+    if(!all(group.by %in% names(dat))) stop("group_by needs to be a subset of", setdiff(names(dat), date))
 
   ## Needs check that date_colum exists and has dates
-  names(dat)[names(dat) == date_column] <- "date"
+  names(dat)[names(dat) == date] <- "date"
 
-  group_by <- c("date", group_by)
-  dat <- drop_na(dat, group_by)
+  group.by <- c("date", group.by)
+  dat <- drop_na(dat, group.by)
 
   counts <- dat %>% filter(!(month(date) == 2 & day(date) == 29)) %>%
-    group_by_at(group_by) %>%
+    group_by_at(group.by) %>%
     summarise(outcome = n()) %>%
     ungroup() %>%
-    complete_(group_by, fill = list(outcome = 0)) %>%
+    complete_(group.by, fill = list(outcome = 0)) %>%
     arrange(date)
 
   if(!is.null(demo)){

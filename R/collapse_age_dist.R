@@ -26,6 +26,6 @@ collapse_age_dist <- function(demo, breaks){
            separate(agegroup, c("start", "end"), sep = "-", remove = FALSE, convert = TRUE) %>%
            mutate(agegroup = reorder(agegroup, start, first)) %>%
            select(-start, -end) %>%
-           arrange(date, agegroup) %>%
+           arrange(agegroup) %>%
            drop_na(agegroup))
 }

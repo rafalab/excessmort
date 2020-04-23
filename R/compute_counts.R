@@ -1,5 +1,7 @@
 #' Compute daily death counts for groups from individual records
 #' @export
+#' @import dplyr
+
 compute_counts <- function(dat, group_by = NULL, demo = NULL,
                            date_column = "date",
                            age_column = "age",
@@ -8,11 +10,12 @@ compute_counts <- function(dat, group_by = NULL, demo = NULL,
 
   if(!is.character(group_by) & !is.null(group_by)) stop("group_by needs to be a character verctor or NULL.")
 
+
   ## prepare demo if it is provided
   if(!is.null(demo) & (agegroup_column %in% group_by)){
     names(demo)[names(demo) == agegroup_column] <- "agegroup"
     if(is.null(age_breaks)){
-      start <-str_extract(demo$agegroup, "\\d+") %>% unique() %>% as.numeric() %>% sort()
+      start <-grep("\\d+", demo$agegroup, value = TRUE) %>% unique() %>% as.numeric() %>% sort()
       age_breaks <- c(start, Inf)
     } else{
       demo <- collapse_age_dist(demo, age_breaks)
@@ -55,13 +58,3 @@ compute_counts <- function(dat, group_by = NULL, demo = NULL,
   return(counts)
 }
 
-
-## function that defines fourier columns
-fourier_trend <- function(x, k = 3){
-  H <- lapply(1:k, function(k){
-    cbind(sin(2*pi*k/365*x), cos(2*pi*k/365*x))
-  })
-  res <- do.call(cbind, H)
-  colnames(res) <- paste(rep(c("sin", "cos"), k), rep(1:k, each = 2), sep="_")
-  return(res)
-}

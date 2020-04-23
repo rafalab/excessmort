@@ -1,5 +1,8 @@
 #' Get demographic data from Census
 #' @export
+#' @importFrom stats setNames
+#' @import dplyr
+
 get_demographics <- function(geography="state",
                              state,
                              county=NULL,
@@ -13,18 +16,28 @@ get_demographics <- function(geography="state",
   # 4. years    : A vector of year values of interest
   # 5. vars     : Vector of variable of interest
 
+  requireNamespace("tidycensus")
+
+  if(! "package:tidycensus" %in% search() ) stop("tidycensus must be loaded.\nLoad with library(tidycensus). Note that you will need to get a key.")
+  if (Sys.getenv("CENSUS_API_KEY") != "") {
+    key <- Sys.getenv("CENSUS_API_KEY")
+  }
+  else if (is.null(key)) {
+    stop("A Census API key is required.  Obtain one at http://api.census.gov/data/key_signup.html, and then supply the key to the `census_api_key` function to use it throughout your tidycensus session.")
+  }
+
   # -- Check state name
   if(nchar(state) > 2){
 
     # -- Correct spell for state name
-    if(!state %in% state.name){ stop(paste0(state," is not a state"))}
+    if(!state %in% datasets::state.name){ stop(paste0(state," is not a state"))}
 
     # -- Getting state abbreviation
-    state <- state.abb[grep(state, state.name)]
+    state <- datasets::state.abb[grep(state, datasets::state.name)]
   } else {
 
     # -- Correct spell for state abbreviation
-    if(!state %in% state.abb){ stop(paste0(state," is not a state"))}
+    if(!state %in% datasets::state.name){ stop(paste0(state," is not a state"))}
 
 
   }
@@ -32,7 +45,7 @@ get_demographics <- function(geography="state",
   # -- Getting data
   demographics <- lapply(years, function(x){
 
-    tmp <- get_estimates(geography        = geography,
+    tmp <- tidycensus::get_estimates(geography        = geography,
                          product          = "characteristics",
                          breakdown        = vars,
                          breakdown_labels = TRUE,

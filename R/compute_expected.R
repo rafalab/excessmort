@@ -1,5 +1,7 @@
 #' Compute expected counts for each day
 #' @export
+#' @importFrom stats glm contr.sum model.matrix contrasts<-
+#'
 compute_expected <- function(counts, exclude = NULL,
                              trend.nknots = 1/5,
                              harmonics = 2,
@@ -45,20 +47,20 @@ compute_expected <- function(counts, exclude = NULL,
   ## fit model
   index <- which(!counts$date %in% out_dates)
 
-  fit <- glm( y[index] ~ x[index,]-1, offset = log(n[index]), family = poisson())
+  fit <- glm( y[index] ~ x[index,]-1, offset = log(n[index]), family = "poisson")
 
   # prepare stuff to return
   expected <- exp(x %*% fit$coefficients) * n
   resid <- y / expected - 1
 
-  seasonal <- tibble(day = 1:TT,
+  seasonal <- data.frame(day = 1:TT,
                      s = exp(fourier_trend(1:TT, k = harmonics)  %*% fit$coefficients[i_h]) -1)
 
   trend <- exp(x_t %*% fit$coefficients[i_t])  * TT * 1000
 
   w <- factor(1:7)
   contrasts(w) <- contr.sum(length(levels(w)), contrasts = TRUE)
-  weekday <- tibble(weekday = 1:7,
+  weekday <- data.frame(weekday = 1:7,
                     effect = exp(model.matrix(~w)[, -1] %*% fit$coefficients[i_w])-1)
 
   ## add expected counts to data table

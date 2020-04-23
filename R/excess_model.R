@@ -1,5 +1,6 @@
 #' Fit excess count model
 #' @export
+#' @importFrom stats ARMAacf glm poly qnorm
 excess_model <- function(counts,
                          event = NULL,
                          start = NULL,
@@ -22,8 +23,8 @@ excess_model <- function(counts,
 
   if(is.null(event) & (is.null(start) | is.null(end))) stop("Need to provide event or start/end")
 
-  if(is.null(start)) start = event - years(1)
-  if(is.null(end)) end = event + years(1)
+  if(is.null(start)) start = event - lubridate::years(1)
+  if(is.null(end)) end = event + lubridate::years(1)
 
   if(mean(counts$outcome, na.rm = TRUE) < 1)
     warning("Average counts per unit of time below 1.")
@@ -70,14 +71,14 @@ excess_model <- function(counts,
     i <- which.min(abs(knots - event_index))
     ##shift knots so that one of the internal knots falls on the event day
     knots <- knots + (event_index -  knots[i])
-    X <- cbind(1, ns(x, knots = knots))
+    X <- cbind(1, splines::ns(x, knots = knots))
     ## add parameters to account for discontinuity
     if(discontinuity){
       ind <- as.numeric(I(x >= event_index))
       X <- cbind(X, ind, poly((x - event_index)*ind, degree = 2))
     }
   } else{
-    X <- cbind(1, ns(x, knots = knots))
+    X <- cbind(1, splines::ns(x, knots = knots))
   }
 
   ## Fit using interative algorithm

@@ -1,6 +1,10 @@
 #' Fit an ar model to residuals from expected counts
+#' @importFrom stats ar acf
+#' @importFrom graphics plot
+
 fit_ar <- function(expected, control.dates = NULL,
                    order.max = 5, aic = FALSE, plot = FALSE){
+
 
   if(is.null(control.dates)){
     warning("No control region suplied, using all data.")

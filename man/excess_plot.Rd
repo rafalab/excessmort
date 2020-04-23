@@ -10,7 +10,7 @@ excess_plot(
   ylim = NULL,
   center = c("zero", "fit"),
   show.data = TRUE,
-  z = qnorm(1 - 0.01/2)
+  allpha = 0.01
 )
 }
 \description{

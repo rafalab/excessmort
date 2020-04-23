@@ -5,10 +5,13 @@ Version: 0.1.0
 Author: Rafael A. Irizarry, Rolando Acosta
 Maintainer: Rafael A. Irizarry <rafael_irizarry@dfci.harvard.edu>
 Depends: R (>= 3.1.2),
-Imports: dplyr, 
+Imports: stats, 
+    datasets, 
+    dplyr, 
     lubridate,
     splines,
     ggplot2
+Suggests: tidycensus
 Description: Functions for estimating excess deaths, or other outcomes, from daily count data. 
 License: Artistic-2.0
 Encoding: UTF-8

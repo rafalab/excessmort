@@ -1,6 +1,8 @@
 #' Callapse age groups into broader ones
 #'
 #' @export
+#' @importFrom stats reorder
+#' @import dplyr
 collapse_age_dist <- function(demo, breaks){
   ## assumes groups are start-end
   ## assumes agegroup contains group
@@ -17,13 +19,13 @@ collapse_age_dist <- function(demo, breaks){
 
   vars <- c(setdiff(names(demo), c("start", "end", "population")))
 
-  demo %>% mutate(agegroup = g) %>%
-    group_by_at(vars) %>%
-    summarize(population = sum(population)) %>%
-    ungroup() %>%
-    separate(agegroup, c("start", "end"), sep = "-", remove = FALSE, convert = TRUE) %>%
-    mutate(agegroup = reorder(agegroup, start, first)) %>%
-    select(-start, -end) %>%
-    arrange(date, agegroup) %>%
-    drop_na(agegroup)
+  return(demo %>% mutate(agegroup = g) %>%
+           group_by_at(vars) %>%
+           summarize(population = sum(population)) %>%
+           ungroup() %>%
+           separate(agegroup, c("start", "end"), sep = "-", remove = FALSE, convert = TRUE) %>%
+           mutate(agegroup = reorder(agegroup, start, first)) %>%
+           select(-start, -end) %>%
+           arrange(date, agegroup) %>%
+           drop_na(agegroup))
 }

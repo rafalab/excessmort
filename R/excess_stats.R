@@ -1,5 +1,6 @@
 #' Compute excess deaths statistics for a list of intervals
 #' @export
+#' @importFrom stats ARMAacf
 excess_stats <- function(counts,
                          intervals,
                          control.dates,
@@ -36,7 +37,7 @@ excess_stats <- function(counts,
 
   date <- counts$date
 
-  map_df(intervals, function(dates){
+  res <- lapply(intervals, function(dates){
     ind <- which(date %in% dates)
     n <- length(ind)
     y <- expected$resid[ind]
@@ -58,10 +59,14 @@ excess_stats <- function(counts,
     total <- sum(obs)
     expected <- sum(mu)
     se <- sqrt(matrix(mu, nrow = 1) %*%  Sigma %*%  matrix(mu, ncol = 1))
-    return(list(start = date[1], end = date[length(ind)],
-                observed = total, expected = expected, se = se,
-                observed_death_rate = total / sum(pop) * 365 * 1000,
-                expected_death_rate = expected / sum(pop) * 365 * 1000,
-                se_death_rate = se / sum(pop) * 365 * 1000))
+    return(data.frame(start = date[1], end = date[length(ind)],
+                      observed = total, expected = expected, se = se,
+                      observed_death_rate = total / sum(pop) * 365 * 1000,
+                      expected_death_rate = expected / sum(pop) * 365 * 1000,
+                      se_death_rate = se / sum(pop) * 365 * 1000))
   })
+
+  res <- do.call(rbind, res)
+
+  return(res)
 }

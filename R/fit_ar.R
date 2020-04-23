@@ -1,4 +1,4 @@
-
+#' Fit an ar model to residuals from expected counts
 fit_ar <- function(expected, control.dates = NULL,
                    order.max = 5, aic = FALSE, plot = FALSE){
 

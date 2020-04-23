@@ -1,3 +1,5 @@
+#' Compute excess deaths statistics for a list of intervals
+#' @export
 excess_stats <- function(counts,
                          intervals,
                          control.dates,

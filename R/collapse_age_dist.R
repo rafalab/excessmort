@@ -1,3 +1,6 @@
+#' Callapse age groups into broader ones
+#'
+#' @export
 collapse_age_dist <- function(demo, breaks){
   ## assumes groups are start-end
   ## assumes agegroup contains group

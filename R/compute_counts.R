@@ -1,3 +1,5 @@
+#' Compute daily death counts for groups from individual records
+#' @export
 compute_counts <- function(dat, group_by = NULL, demo = NULL,
                            date_column = "date",
                            age_column = "age",

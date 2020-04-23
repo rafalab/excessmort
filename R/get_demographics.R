@@ -1,4 +1,5 @@
-# -- Function to get demographic data from Census
+#' Get demographic data from Census
+#' @export
 get_demographics <- function(geography="state",
                              state,
                              county=NULL,

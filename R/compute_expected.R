@@ -1,13 +1,24 @@
+#' Compute expected counts for each day
+#' @export
 compute_expected <- function(counts, exclude = NULL,
                              trend.nknots = 1/5,
                              harmonics = 2,
                              family = "poisson"){
-  library(splines)
-  ## build design matrix
+
+  ## helper function
+  fourier_trend <- function(x, k = 3){
+    H <- lapply(1:k, function(k){
+      cbind(sin(2*pi*k/365*x), cos(2*pi*k/365*x))
+    })
+    res <- do.call(cbind, H)
+    colnames(res) <- paste(rep(c("sin", "cos"), k), rep(1:k, each = 2), sep="_")
+    res
+  }
 
   ## number of observations per year
   TT <- length(unique(noleap_yday(counts$date)))
 
+  ## build design matrix
   # compute dfs
   dfs <- round(length(unique(year(counts$date[!counts$date %in% out_dates])))*trend.nknots)
 

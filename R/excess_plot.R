@@ -1,4 +1,5 @@
-
+#' Plot results from fitted excess count model
+#' @export
 excess_plot <- function(fit, title = "", ylim = NULL,
                         center = c("zero", "fit"),
                         show.data = TRUE,

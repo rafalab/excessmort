@@ -1,3 +1,5 @@
+#' Fit excess count model
+#' @export
 excess_model <- function(counts,
                          event = NULL,
                          start = NULL,

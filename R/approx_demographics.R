@@ -1,4 +1,6 @@
-# -- Function to interpolate demographic data
+#' Interpolate demographic data
+#' @export
+#'
 approx_demographics <- function(demo, first_day, last_day)
 {
   ################## ----- PARAMETERS ----- ##################

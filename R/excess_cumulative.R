@@ -1,3 +1,5 @@
+#' Compute cumulative excess deaths
+#' @export
 excess_cumulative <- function(fit, start, end){
   ind <- which(fit$date %in% seq(start, end, by = "day"))
   n <- length(ind)

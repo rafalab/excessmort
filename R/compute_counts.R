@@ -1,6 +1,8 @@
 #' Compute daily death counts for groups from individual records
 #' @export
 #' @import dplyr
+#' @import rlang
+#' @importFrom tidyr complete separate drop_na
 
 compute_counts <- function(dat, group.by = NULL, demo = NULL,
                            date = "date",
@@ -40,11 +42,11 @@ compute_counts <- function(dat, group.by = NULL, demo = NULL,
   group.by <- c("date", group.by)
   dat <- drop_na(dat, group.by)
 
-  counts <- dat %>% filter(!(month(date) == 2 & day(date) == 29)) %>%
+  counts <- dat %>% filter(!(lubridate::month(date) == 2 & lubridate::day(date) == 29)) %>%
     group_by_at(group.by) %>%
     summarise(outcome = n()) %>%
     ungroup() %>%
-    complete_(group.by, fill = list(outcome = 0)) %>%
+    complete(!!!syms(group.by), fill = list(outcome = 0)) %>%
     arrange(date)
 
   if(!is.null(demo)){

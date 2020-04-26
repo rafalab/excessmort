@@ -6,12 +6,12 @@
 \usage{
 compute_counts(
   dat,
-  group_by = NULL,
+  group.by = NULL,
   demo = NULL,
-  date_column = "date",
-  age_column = "age",
-  agegroup_column = "agegroup",
-  age_breaks = NULL
+  date = "date",
+  age = "age",
+  agegroup = "agegroup",
+  breaks = NULL
 )
 }
 \description{

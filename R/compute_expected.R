@@ -22,7 +22,7 @@ compute_expected <- function(counts, exclude = NULL,
 
   ## build design matrix
   # compute dfs
-  dfs <- round(length(unique(year(counts$date[!counts$date %in% out_dates])))*trend.nknots)
+  dfs <- round(length(unique(lubridate::year(counts$date[!counts$date %in% exclude])))*trend.nknots)
 
   # make trend basis (includes intercept)
   x_t <- splines::ns(as.numeric(counts$date), df = dfs + 1, intercept = TRUE)
@@ -34,7 +34,7 @@ compute_expected <- function(counts, exclude = NULL,
   i_h <- ncol(x_t) + 1:ncol(x_h)
 
   ## weekday effects
-  w <- factor(wday(counts$date))
+  w <- factor(lubridate::wday(counts$date))
   contrasts(w) <- contr.sum(length(levels(w)), contrasts = TRUE)
   x_w <- model.matrix(~w)[, -1] ## intercept already in spline
   i_w <- ncol(x_t) + ncol(x_h) + 1:ncol(x_w)
@@ -45,7 +45,7 @@ compute_expected <- function(counts, exclude = NULL,
   n <- counts$population
 
   ## fit model
-  index <- which(!counts$date %in% out_dates)
+  index <- which(!counts$date %in% exclude)
 
   fit <- glm( y[index] ~ x[index,]-1, offset = log(n[index]), family = "poisson")
 

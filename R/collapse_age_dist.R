@@ -3,6 +3,8 @@
 #' @export
 #' @importFrom stats reorder
 #' @import dplyr
+#' @importFrom tidyr separate drop_na
+
 collapse_age_dist <- function(demo, breaks){
   ## assumes groups are start-end
   ## assumes agegroup contains group

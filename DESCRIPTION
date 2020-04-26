@@ -8,6 +8,8 @@ Depends: R (>= 3.1.2),
 Imports: stats, 
     datasets, 
     dplyr, 
+    tidyr,
+    rlang,
     lubridate,
     splines,
     ggplot2

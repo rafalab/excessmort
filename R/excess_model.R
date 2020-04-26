@@ -53,7 +53,7 @@ excess_model <- function(counts,
 
   ## now fit the GLS to the relevant subset of data
   include_dates = seq(start, end, by = "day")
-  include_dates <- include_dates[!(month(include_dates) == 2 & day(include_dates) == 29)]
+  include_dates <- include_dates[!(lubridate::month(include_dates) == 2 & lubridate::day(include_dates) == 29)]
   ind <- which(expected$date %in% include_dates)
   date <- expected$date[ind]
   n <- length(ind)
@@ -121,7 +121,7 @@ excess_model <- function(counts,
   if(length(ind) > 0){
     cluster <- cumsum(c(2, diff(ind)) > 1)
     indexes <- split(ind, cluster)
-    excess <- map_df(indexes, function(ind){
+    excess <- lapply(indexes, function(ind){
       excess <- mu[ind] %*% fhat[ind]
 
       excess_se <- sqrt(matrix(mu[ind], nrow = 1) %*%
@@ -131,21 +131,21 @@ excess_model <- function(counts,
                           matrix(mu[ind], ncol = 1))
 
       natural_se <- sqrt(matrix(mu[ind], nrow = 1) %*% Sigma[ind, ind] %*% matrix(mu[ind], ncol= 1))
-      list(start = date[ind[1]], end = date[ind[length(ind)]], total = excess,  se = excess_se, natural = natural_se)
+      data.frame(start = date[ind[1]], end = date[ind[length(ind)]], total = excess,  se = excess_se, natural = natural_se)
     })
+    excess <- do.call(rbind, excess)
   } else excess <- data.frame(start = NA, end = NA, total = 0, se = NA, natural= NA)
   return(list(date = date,
               observed = obs,
               expected = mu,
               resid = y,
-              trend = expected$trend,
-              seasonal = expected$seasonal,
-              weekday = expected$weekday,
+              fitted = fhat,
               x = X,
               betacov = xwxi,
-              fitted = fhat,
               se = se,
-              excess = excess,
+              cov = Sigma,
               ar = arfit,
-              cov = Sigma))
+              excess = excess,
+              plugins = expected
+              ))
 }

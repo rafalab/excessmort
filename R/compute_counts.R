@@ -4,17 +4,17 @@
 #' @import rlang
 #' @importFrom tidyr complete separate drop_na
 
-compute_counts <- function(dat, group.by = NULL, demo = NULL,
+compute_counts <- function(dat, by = NULL, demo = NULL,
                            date = "date",
                            age = "age",
                            agegroup = "agegroup",
                            breaks = NULL){
 
-  if(!is.character(group.by) & !is.null(group.by)) stop("group.by needs to be a character verctor or NULL.")
+  if(!is.character(by) & !is.null(by)) stop("by needs to be a character verctor or NULL.")
 
 
   ## prepare demo if it is provided
-  if(!is.null(demo) & (agegroup %in% group.by)){
+  if(!is.null(demo) & (agegroup %in% by)){
     names(demo)[names(demo) == agegroup] <- "agegroup"
     if(is.null(breaks)){
       start <-grep("\\d+", demo$agegroup, value = TRUE) %>% unique() %>% as.numeric() %>% sort()
@@ -24,7 +24,7 @@ compute_counts <- function(dat, group.by = NULL, demo = NULL,
     }
   }
 
-  if(agegroup %in% group.by){
+  if(agegroup %in% by){
     if(is.null(breaks)){
       stop("Need to provide age breaks or a demographics table")
     } else{
@@ -33,20 +33,20 @@ compute_counts <- function(dat, group.by = NULL, demo = NULL,
       } else stop(age, "not a column in dat")
     }
   }
-  if(!is.null(group.by))
-    if(!all(group.by %in% names(dat))) stop("group_by needs to be a subset of", setdiff(names(dat), date))
+  if(!is.null(by))
+    if(!all(by %in% names(dat))) stop("by needs to be a subset of", setdiff(names(dat), date))
 
   ## Needs check that date_colum exists and has dates
   names(dat)[names(dat) == date] <- "date"
 
-  group.by <- c("date", group.by)
-  dat <- drop_na(dat, group.by)
+  by <- c("date", by)
+  dat <- drop_na(dat, by)
 
   counts <- dat %>% filter(!(lubridate::month(date) == 2 & lubridate::day(date) == 29)) %>%
-    group_by_at(group.by) %>%
+    group_by_at(by) %>%
     summarise(outcome = n()) %>%
     ungroup() %>%
-    complete(!!!syms(group.by), fill = list(outcome = 0)) %>%
+    complete(!!!syms(by), fill = list(outcome = 0)) %>%
     arrange(date)
 
   if(!is.null(demo)){

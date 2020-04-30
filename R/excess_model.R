@@ -140,6 +140,7 @@ excess_model <- function(counts,
               expected = mu,
               resid = y,
               fitted = fhat,
+              population =
               x = X,
               betacov = xwxi,
               se = se,

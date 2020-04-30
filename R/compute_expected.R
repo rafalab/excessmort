@@ -5,7 +5,8 @@
 compute_expected <- function(counts, exclude = NULL,
                              trend.nknots = 1/5,
                              harmonics = 2,
-                             family = "poisson"){
+                             family = "poisson",
+                             day.effect = TRUE){
 
   ## helper function
   fourier_trend <- function(x, k = 3){
@@ -40,7 +41,11 @@ compute_expected <- function(counts, exclude = NULL,
   i_w <- ncol(x_t) + ncol(x_h) + 1:ncol(x_w)
 
   ## build desing matrix
-  x <- cbind(x_t, x_h, x_w)
+  if(day.effect){
+    x <- cbind(x_t, x_h, x_w)
+  } else{
+    x <- cbind(x_t, x_h)
+  }
   y <- counts$outcome
   n <- counts$population
 
@@ -58,10 +63,14 @@ compute_expected <- function(counts, exclude = NULL,
 
   trend <- exp(x_t %*% fit$coefficients[i_t])  * TT * 1000
 
-  w <- factor(1:7)
-  contrasts(w) <- contr.sum(length(levels(w)), contrasts = TRUE)
-  weekday <- data.frame(weekday = 1:7,
-                    effect = exp(model.matrix(~w)[, -1] %*% fit$coefficients[i_w])-1)
+  if(day.effect){
+    w <- factor(1:7)
+    contrasts(w) <- contr.sum(length(levels(w)), contrasts = TRUE)
+    weekday <- data.frame(weekday = 1:7,
+                          effect = exp(model.matrix(~w)[, -1] %*% fit$coefficients[i_w])-1)
+  } else{
+    weekday <- NULL
+  }
 
   ## add expected counts to data table
   return(list(date = counts$date,

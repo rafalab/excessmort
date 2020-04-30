@@ -9,6 +9,7 @@ excess_stats <- function(counts,
                          trend.nknots = 1/5,
                          harmonics = 2,
                          family = "poisson",
+                         day.effect = TRUE,
                          max.control = 5000,
                          order.max = 30,
                          aic = TRUE){
@@ -27,7 +28,8 @@ excess_stats <- function(counts,
     expected <- compute_expected(counts, exclude = exclude,
                                  trend.nknots = trend.nknots,
                                  harmonics = harmonics,
-                                 family = family)
+                                 family = family,
+                                 day.effect = day.effect)
   }
 
 

@@ -11,6 +11,7 @@ excess_model <- function(counts,
                          trend.nknots = 1/5,
                          harmonics = 2,
                          family = "poisson",
+                         day.effect = TRUE,
                          max.control = 5000,
                          nknots = 4,
                          discontinuity = TRUE,
@@ -45,7 +46,8 @@ excess_model <- function(counts,
     expected <- compute_expected(counts, exclude = exclude,
                                  trend.nknots = trend.nknots,
                                  harmonics = harmonics,
-                                 family = family)
+                                 family = family,
+                                 day.effect = day.effect)
   }
 
   ## Use control days to compute the autocorrelation function
@@ -61,6 +63,7 @@ excess_model <- function(counts,
   y <- expected$resid[ind]
   mu <- expected$expected[ind]
   obs <- counts$outcome[ind]
+  pop <- counts$population[ind]
 
   ## create the design matrix
   df <- round(n / TT * nknots)
@@ -140,7 +143,7 @@ excess_model <- function(counts,
               expected = mu,
               resid = y,
               fitted = fhat,
-              population =
+              population = pop,
               x = X,
               betacov = xwxi,
               se = se,

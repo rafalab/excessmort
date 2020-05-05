@@ -22,8 +22,15 @@ excess_model <- function(counts,
                          alpha = 0.05,
                          min.rate = 0.01){ ##smallest possible death rate
 
-  if(is.null(event) & (is.null(start) | is.null(end))) stop("Need to provide event or start/end")
+  ## order by dates
+  counts %>% arrange(date)
 
+  ## checks
+  if(is.null(event) & (is.null(start) | is.null(end))){
+    warning("No event or start/end provide, using all data")
+    start <- min(counts$date)
+    end <- max(counts$date)
+  }
   if(is.null(start)) start = event - lubridate::years(1)
   if(is.null(end)) end = event + lubridate::years(1)
 
@@ -39,7 +46,7 @@ excess_model <- function(counts,
 
   if(is.null(exclude)) warning("No dates excluded.")
   ## number of observations per year
-  TT <- length(unique(noleap_yday(counts$date)))
+  TT <- round(365 / (as.numeric(diff(range(counts$date)))/nrow(counts)))
 
   ## if expected not supplied compute it
   if(is.null(expected)){
@@ -59,7 +66,7 @@ excess_model <- function(counts,
   ind <- which(expected$date %in% include_dates)
   date <- expected$date[ind]
   n <- length(ind)
-  x <- 1:n
+  x <- 0:(n-1) / TT * 365
   y <- expected$resid[ind]
   mu <- expected$expected[ind]
   obs <- counts$outcome[ind]
@@ -67,7 +74,7 @@ excess_model <- function(counts,
 
   ## create the design matrix
   df <- round(n / TT * nknots)
-  knots <- round(seq(1, n, length = df))
+  knots <- x[round(seq(1, n, length = df))]
   knots <- knots[-c(1, length(knots))]
   if(!is.null(event)){
     event_index <- x[which(date == event)]
@@ -101,7 +108,7 @@ excess_model <- function(counts,
 
   ## start iterations
   while(count < max.iter & sum((beta-beta0)^2) > eps){
-    if(length(arfit$ar) > 0 & arfit$sigma > 0){
+    if(length(arfit$ar) > 0 & s > 0){
       Sigma <- apply(abs(outer(1:n, 1:n, "-")) + 1, 1, function(i) rhos[i]) *
         outer(sqrt(s^2 + (1+fhat)/mu), sqrt(s^2 + (1+fhat)/mu))
       Sigma_inv <- mysolve(Sigma)

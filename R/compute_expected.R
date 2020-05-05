@@ -17,9 +17,11 @@ compute_expected <- function(counts, exclude = NULL,
     colnames(res) <- paste(rep(c("sin", "cos"), k), rep(1:k, each = 2), sep="_")
     res
   }
+  ## order by dates
+  counts %>% arrange(date)
 
   ## number of observations per year
-  TT <- length(unique(noleap_yday(counts$date)))
+  TT <- round(365 / (as.numeric(diff(range(counts$date)))/nrow(counts)))
 
   ## build design matrix
   # compute dfs
@@ -34,14 +36,15 @@ compute_expected <- function(counts, exclude = NULL,
   x_h <- fourier_trend(yd, k = harmonics)
   i_h <- ncol(x_t) + 1:ncol(x_h)
 
-  ## weekday effects
-  w <- factor(lubridate::wday(counts$date))
-  contrasts(w) <- contr.sum(length(levels(w)), contrasts = TRUE)
-  x_w <- model.matrix(~w)[, -1] ## intercept already in spline
-  i_w <- ncol(x_t) + ncol(x_h) + 1:ncol(x_w)
 
   ## build desing matrix
   if(day.effect){
+    ## weekday effects
+    w <- factor(lubridate::wday(counts$date))
+    contrasts(w) <- contr.sum(length(levels(w)), contrasts = TRUE)
+
+    x_w <- model.matrix(~w)[, -1] ## intercept already in spline
+    i_w <- ncol(x_t) + ncol(x_h) + 1:ncol(x_w)
     x <- cbind(x_t, x_h, x_w)
   } else{
     x <- cbind(x_t, x_h)
@@ -58,8 +61,8 @@ compute_expected <- function(counts, exclude = NULL,
   expected <- exp(x %*% fit$coefficients) * n
   resid <- y / expected - 1
 
-  seasonal <- data.frame(day = 1:TT,
-                     s = exp(fourier_trend(1:TT, k = harmonics)  %*% fit$coefficients[i_h]) -1)
+  seasonal <- data.frame(day = seq(0, 364, length=TT),
+                     s = exp(fourier_trend(seq(0, 364, length=TT), k = harmonics)  %*% fit$coefficients[i_h]) -1)
 
   trend <- exp(x_t %*% fit$coefficients[i_t])  * TT * 1000
 

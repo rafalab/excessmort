@@ -61,11 +61,13 @@ excess_stats <- function(counts,
     total <- sum(obs)
     expected <- sum(mu)
     se <- sqrt(matrix(mu, nrow = 1) %*%  Sigma %*%  matrix(mu, ncol = 1))
+    TT <- round(365 / (as.numeric(diff(range(counts$date)))/nrow(counts)))
+
     return(data.frame(start = date[1], end = date[length(ind)],
                       observed = total, expected = expected, se = se,
-                      observed_death_rate = total / sum(pop) * 365 * 1000,
-                      expected_death_rate = expected / sum(pop) * 365 * 1000,
-                      se_death_rate = se / sum(pop) * 365 * 1000))
+                      observed_death_rate = total / sum(pop) * TT * 1000,
+                      expected_death_rate = expected / sum(pop) * TT * 1000,
+                      se_death_rate = se / sum(pop) * TT * 1000))
   })
 
   res <- do.call(rbind, res)

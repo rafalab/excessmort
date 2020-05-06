@@ -13,8 +13,9 @@ fit_ar <- function(expected, control.dates = NULL,
 
   date <- expected$date
   ind <- which(date %in% control.dates)
-  y <- expected$resid[ind]
   mu <- expected$expected[ind]
+  y <- (expected$observed[ind] - mu)/mu
+
   s2 <- pmax(0, mean(y^2 - 1/mu))
   w <- 1 / sqrt(1/mu + s2)
 

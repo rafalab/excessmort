@@ -7,15 +7,13 @@
 excess_stats(
   counts,
   intervals,
-  control.dates,
   expected = NULL,
   exclude = NULL,
   trend.nknots = 1/5,
   harmonics = 2,
-  family = "poisson",
-  max.control = 5000,
-  order.max = 30,
-  aic = TRUE
+  family = "quasipoisson",
+  day.effect = TRUE,
+  max.control = 5000
 )
 }
 \description{

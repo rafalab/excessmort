@@ -5,7 +5,7 @@
 compute_expected <- function(counts, exclude = NULL,
                              trend.nknots = 1/5,
                              harmonics = 2,
-                             family = "poisson",
+                             family = "quasipoisson",
                              day.effect = TRUE){
 
   ## helper function
@@ -18,7 +18,7 @@ compute_expected <- function(counts, exclude = NULL,
     res
   }
   ## order by dates
-  counts %>% arrange(date)
+  counts <- counts <- counts %>% arrange(date)
 
   ## number of observations per year
   TT <- round(365 / (as.numeric(diff(range(counts$date)))/nrow(counts)))
@@ -35,7 +35,6 @@ compute_expected <- function(counts, exclude = NULL,
   yd <- noleap_yday(counts$date)
   x_h <- fourier_trend(yd, k = harmonics)
   i_h <- ncol(x_t) + 1:ncol(x_h)
-
 
   ## build desing matrix
   if(day.effect){
@@ -55,14 +54,13 @@ compute_expected <- function(counts, exclude = NULL,
   ## fit model
   index <- which(!counts$date %in% exclude)
 
-  fit <- glm( y[index] ~ x[index,]-1, offset = log(n[index]), family = "poisson")
-
+  fit <- glm( y[index] ~ x[index,]-1, offset = log(n[index]), family = family)
+  dispersion <- pmax(1, summary(fit)$dispersion)
   # prepare stuff to return
   expected <- exp(x %*% fit$coefficients) * n
-  resid <- y / expected - 1
 
   seasonal <- data.frame(day = seq(0, 364, length=TT),
-                     s = exp(fourier_trend(seq(0, 364, length=TT), k = harmonics)  %*% fit$coefficients[i_h]) -1)
+                         s = exp(fourier_trend(seq(0, 364, length=TT), k = harmonics)  %*% fit$coefficients[i_h]) -1)
 
   trend <- exp(x_t %*% fit$coefficients[i_t])  * TT * 1000
 
@@ -77,8 +75,9 @@ compute_expected <- function(counts, exclude = NULL,
 
   ## add expected counts to data table
   return(list(date = counts$date,
+              observed = counts$outcome,
               expected = expected,
-              resid = resid,
+              dispersion = dispersion,
               trend = trend,
               seasonal = seasonal,
               weekday = weekday))

@@ -6,7 +6,7 @@
 \usage{
 compute_counts(
   dat,
-  group.by = NULL,
+  by = NULL,
   demo = NULL,
   date = "date",
   age = "age",

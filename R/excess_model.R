@@ -5,25 +5,21 @@ excess_model <- function(counts,
                          event = NULL,
                          start = NULL,
                          end = NULL,
-                         control.dates = NULL,
                          expected = NULL,
                          exclude = NULL,
                          trend.nknots = 1/5,
                          harmonics = 2,
-                         family = "poisson",
+                         family = "quasipoisson",
                          day.effect = TRUE,
-                         max.control = 5000,
                          nknots = 4,
                          discontinuity = TRUE,
-                         order.max = 14,
-                         aic = TRUE,
                          max.iter = 15,
                          eps = 1e-8,
                          alpha = 0.05,
                          min.rate = 0.01){ ##smallest possible death rate
 
   ## order by dates
-  counts %>% arrange(date)
+  counts <- counts %>% arrange(date)
 
   ## checks
   if(is.null(event) & (is.null(start) | is.null(end))){
@@ -36,13 +32,6 @@ excess_model <- function(counts,
 
   if(mean(counts$outcome, na.rm = TRUE) < 1)
     warning("Average counts per unit of time below 1.")
-
-  if(is.null(control.dates)){
-    warning("No control region suplied, using all data. This is not recommended.")
-    control.dates <- expected$date
-  }
-
-  if(length(control.dates) > max.control) warning("Length of control longer than", max.control,". May result in long wait.")
 
   if(is.null(exclude)) warning("No dates excluded.")
   ## number of observations per year
@@ -57,8 +46,6 @@ excess_model <- function(counts,
                                  day.effect = day.effect)
   }
 
-  ## Use control days to compute the autocorrelation function
-  arfit <- fit_ar(expected, control.dates, order.max = order.max, aic = aic)
 
   ## now fit the GLS to the relevant subset of data
   include_dates = seq(start, end, by = "day")
@@ -67,7 +54,6 @@ excess_model <- function(counts,
   date <- expected$date[ind]
   n <- length(ind)
   x <- 0:(n-1) / TT * 365
-  y <- expected$resid[ind]
   mu <- expected$expected[ind]
   obs <- counts$outcome[ind]
   pop <- counts$population[ind]
@@ -91,41 +77,10 @@ excess_model <- function(counts,
     X <- cbind(1, splines::ns(x, knots = knots))
   }
 
-  ## Fit using interative algorithm
-  ## starting values
-  fhat <- 0
-  beta <- 0; beta0 <- 1
-  count <- 0
-
-  ## convinience function
-  mysolve <- function(x) chol2inv(chol(x))
-
-  ## parameters for covariance matrix
-  s <- arfit$sigma
-  if(length(arfit$ar) > 0 & arfit$sigma > 0){
-    rhos <- ARMAacf(ar = arfit$ar, ma = 0, lag.max = n)
-  }
-
-  ## start iterations
-  while(count < max.iter & sum((beta-beta0)^2) > eps){
-    if(length(arfit$ar) > 0 & s > 0){
-      Sigma <- apply(abs(outer(1:n, 1:n, "-")) + 1, 1, function(i) rhos[i]) *
-        outer(sqrt(s^2 + (1+fhat)/mu), sqrt(s^2 + (1+fhat)/mu))
-      Sigma_inv <- mysolve(Sigma)
-    } else{
-      Sigma <- diag(s^2 + (1+fhat)/mu)
-      Sigma_inv <- diag(1/(s^2 + (1+fhat)/mu))
-    }
-    ## fit spline using weighted least squares
-    xwxi <- mysolve(t(X) %*% Sigma_inv %*% X)
-    beta0 <- beta
-    beta <- xwxi %*% t(X) %*% Sigma_inv %*% y
-    count <- count + 1
-    fhat <- pmax(as.vector(X %*% beta), min.rate - 1)
-  }
-  if(count >= max.iter) warning("No convergence after ", max.iter, " iterations.")
-
-  se <- sqrt(apply(X, 1, function(x) matrix(x, nrow = 1) %*% xwxi %*% matrix(x, ncol = 1)))
+  fit <- glm(obs ~ X-1, offset = log(mu), family = "poisson")
+  tmp<- predict(fit, se = TRUE)
+  fhat <- tmp$fit - log(mu)
+  se <- tmp$se * sqrt(expected$dispersion)
 
   ind <- which(fhat - qnorm(1 - alpha/2)*se >= 0)
   if(length(ind) > 0){
@@ -136,11 +91,12 @@ excess_model <- function(counts,
 
       excess_se <- sqrt(matrix(mu[ind], nrow = 1) %*%
                           X[ind,,drop=FALSE] %*%
-                          xwxi %*%
+                          summary(fit)$cov.unscaled%*%
                           t(X[ind,,drop=FALSE]) %*%
                           matrix(mu[ind], ncol = 1))
+      excess_se <- excess_se * sqrt(expected$dispersion)
 
-      natural_se <- sqrt(matrix(mu[ind], nrow = 1) %*% Sigma[ind, ind] %*% matrix(mu[ind], ncol= 1))
+      natural_se <- mu[ind] * sqrt(expected$dispersion)
       data.frame(start = date[ind[1]], end = date[ind[length(ind)]], total = excess,  se = excess_se, natural = natural_se)
     })
     excess <- do.call(rbind, excess)
@@ -148,14 +104,11 @@ excess_model <- function(counts,
   return(list(date = date,
               observed = obs,
               expected = mu,
-              resid = y,
               fitted = fhat,
               population = pop,
               x = X,
-              betacov = xwxi,
+              betacov = summary(fit)$cov.unscaled*sqrt(expected$dispersion),
               se = se,
-              cov = Sigma,
-              ar = arfit,
               excess = excess,
               plugins = expected
               ))

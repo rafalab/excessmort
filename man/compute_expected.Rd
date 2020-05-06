@@ -9,7 +9,6 @@ compute_expected(
   exclude = NULL,
   trend.nknots = 1/5,
   harmonics = 2,
-  family = "quasipoisson",
   day.effect = TRUE
 )
 }

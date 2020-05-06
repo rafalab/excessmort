@@ -9,7 +9,6 @@ excess_model <- function(counts,
                          exclude = NULL,
                          trend.nknots = 1/5,
                          harmonics = 2,
-                         family = "quasipoisson",
                          day.effect = TRUE,
                          nknots = 4,
                          discontinuity = TRUE,
@@ -42,7 +41,6 @@ excess_model <- function(counts,
     expected <- compute_expected(counts, exclude = exclude,
                                  trend.nknots = trend.nknots,
                                  harmonics = harmonics,
-                                 family = family,
                                  day.effect = day.effect)
   }
 
@@ -78,11 +76,11 @@ excess_model <- function(counts,
   }
 
   fit <- glm(obs ~ X-1, offset = log(mu), family = "poisson")
-  tmp<- predict(fit, se = TRUE)
-  fhat <- tmp$fit - log(mu)
-  se <- tmp$se * sqrt(expected$dispersion)
+  tmp<- predict(fit, se = TRUE, type = "response")
+  fhat <- tmp$fit/mu - 1
+  se <- tmp$se * sqrt(expected$dispersion) / mu
 
-  ind <- which(fhat - qnorm(1 - alpha/2)*se >= 0)
+  ind <- which(fhat - qnorm(1 - alpha/2) * se >= 0)
   if(length(ind) > 0){
     cluster <- cumsum(c(2, diff(ind)) > 1)
     indexes <- split(ind, cluster)
@@ -91,12 +89,12 @@ excess_model <- function(counts,
 
       excess_se <- sqrt(matrix(mu[ind], nrow = 1) %*%
                           X[ind,,drop=FALSE] %*%
-                          summary(fit)$cov.unscaled%*%
+                          summary(fit)$cov.unscaled %*%
                           t(X[ind,,drop=FALSE]) %*%
                           matrix(mu[ind], ncol = 1))
       excess_se <- excess_se * sqrt(expected$dispersion)
 
-      natural_se <- mu[ind] * sqrt(expected$dispersion)
+      natural_se <- sqrt(sum(mu[ind] * expected$dispersion))
       data.frame(start = date[ind[1]], end = date[ind[length(ind)]], total = excess,  se = excess_se, natural = natural_se)
     })
     excess <- do.call(rbind, excess)

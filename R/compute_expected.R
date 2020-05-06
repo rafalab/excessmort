@@ -5,7 +5,6 @@
 compute_expected <- function(counts, exclude = NULL,
                              trend.nknots = 1/5,
                              harmonics = 2,
-                             family = "quasipoisson",
                              day.effect = TRUE){
 
   ## helper function
@@ -54,7 +53,7 @@ compute_expected <- function(counts, exclude = NULL,
   ## fit model
   index <- which(!counts$date %in% exclude)
 
-  fit <- glm( y[index] ~ x[index,]-1, offset = log(n[index]), family = family)
+  fit <- glm( y[index] ~ x[index,]-1, offset = log(n[index]), family = "quasipoisson")
   dispersion <- pmax(1, summary(fit)$dispersion)
   # prepare stuff to return
   expected <- exp(x %*% fit$coefficients) * n

@@ -16,7 +16,7 @@ excess_plot <- function(fit, title = "", ylim = NULL,
   if(match.arg(center) == "zero") center <- 0 else center <- fit$fitted
 
   p <- with(fit, data.frame(date = date,
-                        y = 100 * resid,
+                        y = 100 * (observed - expected)/expected,
                         increase = 100 * fitted,
                         lower = 100 * (center - z*se),
                         upper = 100 * (center + z*se))) %>%

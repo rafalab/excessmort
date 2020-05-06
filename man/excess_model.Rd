@@ -13,7 +13,6 @@ excess_model(
   exclude = NULL,
   trend.nknots = 1/5,
   harmonics = 2,
-  family = "quasipoisson",
   day.effect = TRUE,
   nknots = 4,
   discontinuity = TRUE,

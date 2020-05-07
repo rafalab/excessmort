@@ -2,7 +2,8 @@
 #' @export
 #' @importFrom stats glm contr.sum model.matrix contrasts<-
 #'
-compute_expected <- function(counts, exclude = NULL,
+compute_expected <- function(counts,
+                             exclude = NULL,
                              trend.nknots = 1/5,
                              harmonics = 2,
                              day.effect = TRUE){
@@ -55,11 +56,12 @@ compute_expected <- function(counts, exclude = NULL,
 
   fit <- glm( y[index] ~ x[index,]-1, offset = log(n[index]), family = "quasipoisson")
   dispersion <- pmax(1, summary(fit)$dispersion)
+
   # prepare stuff to return
   expected <- exp(x %*% fit$coefficients) * n
 
-  seasonal <- data.frame(day = seq(0, 364, length=TT),
-                         s = exp(fourier_trend(seq(0, 364, length=TT), k = harmonics)  %*% fit$coefficients[i_h]) -1)
+  seasonal <- data.frame(day = seq(1, 365, length=TT),
+                         s = exp(fourier_trend(seq(1, 365, length=TT), k = harmonics)  %*% fit$coefficients[i_h]) -1)
 
   trend <- exp(x_t %*% fit$coefficients[i_t])  * TT * 1000
 

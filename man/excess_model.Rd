@@ -9,17 +9,23 @@ excess_model(
   event = NULL,
   start = NULL,
   end = NULL,
+  nknots = 12,
+  discontinuity = TRUE,
   expected = NULL,
   exclude = NULL,
   trend.nknots = 1/5,
   harmonics = 2,
   day.effect = TRUE,
-  nknots = 4,
-  discontinuity = TRUE,
+  correlated.errors = FALSE,
+  control.dates = NULL,
+  max.control = 5000,
+  order.max = 14,
+  aic = TRUE,
   max.iter = 15,
   eps = 1e-08,
   alpha = 0.05,
-  min.rate = 0.01
+  min.rate = 0.01,
+  verbose = TRUE
 )
 }
 \description{

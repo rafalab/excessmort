@@ -11,9 +11,13 @@ excess_stats(
   exclude = NULL,
   trend.nknots = 1/5,
   harmonics = 2,
-  family = "quasipoisson",
   day.effect = TRUE,
-  max.control = 5000
+  correlated.errors = FALSE,
+  control.dates = NULL,
+  max.control = 5000,
+  order.max = 30,
+  aic = TRUE,
+  verbose = TRUE
 )
 }
 \description{

@@ -1,8 +1,8 @@
 #' Check if expected counts fit data
 #' @export
+#' @import dplyr
 #' @importFrom stats qnorm
 #' @importFrom ggplot2 ggplot geom_ribbon ylab xlab geom_point coord_cartesian geom_line
-#'
 
 
 expected_plot <- function(expected, title = "",
@@ -25,12 +25,15 @@ expected_plot <- function(expected, title = "",
     filter(date >= start & date <= end)
   if(weekly){
     dat <- dat %>%
-      mutate(date = floor_date(date, unit = "week")) %>%
+      mutate(date = lubridate::floor_date(date, unit = "week")) %>%
       group_by(date) %>%
-      summarize(expected = sum(expected),
-                observed = sum(observed)) %>%
+      summarize(expected = mean(expected)*7,
+                observed = mean(observed)*7) %>%
       ungroup()
   }
+
+# so ----------------------------------------------------------------------
+
 
   yl<- "Counts"
   if(weekly) yl <- paste("Weekly", yl)

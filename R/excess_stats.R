@@ -5,15 +5,17 @@ excess_stats <- function(counts,
                          intervals,
                          expected = NULL,
                          exclude = NULL,
+                         model = c("quasipoisson", "poisson", "correlated"),
                          trend.nknots = 1/5,
                          harmonics = 2,
                          day.effect = TRUE,
-                         correlated.errors = FALSE,
                          control.dates = NULL,
                          max.control = 5000,
                          order.max = 30,
                          aic = TRUE,
                          verbose = TRUE){
+
+  correlated.errors <- match.arg(model) == "correlated"
 
   ## checks
   if(!identical(counts, arrange(counts,date))) stop("counts must be ordered by date.")
@@ -51,6 +53,8 @@ excess_stats <- function(counts,
                                  harmonics = harmonics,
                                  day.effect = day.effect)
   }
+  ## compute_expected always uses quasipoisson
+  if(match.arg(model) == "poisson") expected$dispersion <- 1
 
   if(correlated.errors){
     arfit <- fit_ar(expected, control.dates, order.max = order.max, aic = aic)

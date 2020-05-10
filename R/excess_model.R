@@ -5,6 +5,7 @@ excess_model <- function(counts,
                          event = NULL,
                          start = NULL,
                          end = NULL,
+                         model = c("quasipoisson", "poisson", "correlated"),
                          nknots = 12,
                          discontinuity = TRUE,
                          expected = NULL,
@@ -12,7 +13,6 @@ excess_model <- function(counts,
                          trend.nknots = 1/5,
                          harmonics = 2,
                          day.effect = TRUE,
-                         correlated.errors = FALSE,
                          control.dates = NULL,
                          max.control = 5000,
                          order.max = 14,
@@ -23,6 +23,7 @@ excess_model <- function(counts,
                          min.rate = 0.01,
                          verbose = TRUE){
 
+  correlated.errors <- match.arg(model) == "correlated"
   ## checks
   if(!identical(counts, arrange(counts,date))) stop("counts must be ordered by date.")
 
@@ -79,6 +80,8 @@ excess_model <- function(counts,
                                  harmonics = harmonics,
                                  day.effect = day.effect)
   }
+  ## compute_expected always uses quasipoisson
+  if(match.arg(model) == "poisson") expected$dispersion <- 1
 
   ## Use control days to compute the autocorrelation function
   if(correlated.errors){
@@ -204,7 +207,7 @@ excess_model <- function(counts,
               frequency = TT,
               excess = excess,
               plugins = expected,
-              correlated.errors = correlated.errors,
+              model = match.arg(model),
               cov = if(correlated.errors) Sigma else  NULL,
               ar = if(correlated.errors) arfit else NULL
   ))

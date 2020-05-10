@@ -12,7 +12,7 @@ excess_cumulative <- function(fit, start, end){
   fit_excess <- A %*% fhat
   obs_excess <- cumsum(fit$observed[ind] - fit$expected[ind])
   fitted_se <- sqrt(diag(A %*% fit$x[ind,] %*% fit$betacov %*% t(A %*% fit$x[ind,])))
-  if(fit$correlated.errors){
+  if(fit$model == "correlated"){
     se <- sqrt(diag(A %*% fit$cov[ind, ind] %*% t(A)))
   } else{
     se <- sqrt(cumsum(fit$expected[ind]*fit$plugins$dispersion))

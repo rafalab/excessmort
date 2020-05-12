@@ -14,7 +14,7 @@ collapse_age_dist <- function(demo, breaks){
 
   edges <- c(unique(demo$start), Inf)
 
-  if(!all(breaks %in% edges)) stop("Age breaks must be a subset", edges)
+  if(!all(breaks %in% edges)) stop("Age breaks must be a subset of", paste(edges, collapse = ","))
 
   g <- as.character(cut(demo$start, breaks, right = FALSE,
                         labels = paste(breaks[-length(breaks)], c(breaks[-1]-1), sep="-")))

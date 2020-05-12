@@ -204,14 +204,15 @@ excess_model <- function(counts,
                 dispersion = dispersion,
                 se = se,
                 detected_intervals = detected_intervals)
+
     attr(ret, "frequency") <- frequency
     attr(ret, "model") <- match.arg(model)
     attr(ret, "type") <- "curve_fit"
+
     if(correlated.errors){
       ret$ar <-  arfit
     }
-  } else{
-    ret <- list()
+
   }
 
   ## If intervals provided compute excess deaths in each one
@@ -244,10 +245,15 @@ excess_model <- function(counts,
                    counts$population[ind],
                    frequency)
     })
-    ret$excess <- do.call(rbind, res)
-    attr(res, "type") <- append(attr(res, "type"), "excess")
+    res <- do.call(rbind, res)
+    if(!exists("ret")){
+      ret <- res
+      attr(ret, "type") <- "excess"
+    }  else{
+      ret$excess <- res
+      attr(ret, "type") <- append(attr(ret, "type"), "excess")
+    }
   }
-
   return(ret)
-
 }
+

@@ -7,9 +7,12 @@
 compute_expected(
   counts,
   exclude = NULL,
-  trend.nknots = 1/5,
+  knots.per.year = 1/5,
   harmonics = 2,
-  day.effect = TRUE
+  frequency = NULL,
+  weekday.effect = TRUE,
+  keep.components = FALSE,
+  verbose = TRUE
 )
 }
 \description{

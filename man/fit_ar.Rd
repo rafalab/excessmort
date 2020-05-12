@@ -4,13 +4,7 @@
 \alias{fit_ar}
 \title{Fit an ar model to residuals from expected counts}
 \usage{
-fit_ar(
-  expected,
-  control.dates = NULL,
-  order.max = 5,
-  aic = FALSE,
-  plot = FALSE
-)
+fit_ar(counts, control.dates = NULL, order.max = 5, aic = FALSE, plot = FALSE)
 }
 \description{
 Fit an ar model to residuals from expected counts

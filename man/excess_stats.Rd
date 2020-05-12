@@ -2,24 +2,21 @@
 % Please edit documentation in R/excess_stats.R
 \name{excess_stats}
 \alias{excess_stats}
-\title{Compute excess deaths statistics for a list of intervals}
+\title{Helper funtion to compute excess deaths statistics for a}
 \usage{
 excess_stats(
-  counts,
-  intervals,
-  expected = NULL,
-  exclude = NULL,
-  model = c("quasipoisson", "poisson", "correlated"),
-  trend.nknots = 1/5,
-  harmonics = 2,
-  day.effect = TRUE,
-  control.dates = NULL,
-  max.control = 5000,
-  order.max = 30,
-  aic = TRUE,
-  verbose = TRUE
+  start,
+  end,
+  obs,
+  mu,
+  cov,
+  pop,
+  frequency,
+  fhat = NULL,
+  X = NULL,
+  betacov = NULL
 )
 }
 \description{
-Compute excess deaths statistics for a list of intervals
+Helper funtion to compute excess deaths statistics for a
 }

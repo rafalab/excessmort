@@ -2,19 +2,19 @@
 #' @importFrom stats ar acf
 #' @importFrom graphics plot
 
-fit_ar <- function(expected, control.dates = NULL,
+fit_ar <- function(counts, control.dates = NULL,
                    order.max = 5, aic = FALSE, plot = FALSE){
 
 
   if(is.null(control.dates)){
     warning("No control region suplied, using all data.")
-    control.dates <- expected$date
+    control.dates <- counts$date
   }
 
-  date <- expected$date
+  date <- counts$date
   ind <- which(date %in% control.dates)
-  mu <- expected$expected[ind]
-  y <- (expected$observed[ind] - mu)/mu
+  mu <- counts$expected[ind]
+  y <- (counts$outcome[ind] - mu)/mu
 
   s2 <- pmax(0, mean(y^2 - 1/mu))
   w <- 1 / sqrt(1/mu + s2)

@@ -20,7 +20,7 @@ expected_plot <- function(expected, title = "",
 
   dat <- with(expected,
               data.frame(date = date,
-                         observed = observed,
+                         observed = outcome,
                          expected = expected)) %>%
     filter(date >= start & date <= end)
   if(weekly){

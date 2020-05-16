@@ -119,8 +119,8 @@ excess_model <- function(counts,
       X <- cbind(1, splines::ns(x, knots = knots))
       ## add parameters to account for discontinuity
       if(discontinuity){
-        ind <- as.numeric(I(x >= event_index))
-        X <- cbind(X, ind, poly((x - event_index)*ind, degree = 2))
+        after_ind <- as.numeric(I(x >= event_index))
+        X <- cbind(X, after_ind, poly((x - event_index)*after_ind, degree = 2))
       }
     } else{
       X <- cbind(1, splines::ns(x, knots = knots))
@@ -172,21 +172,21 @@ excess_model <- function(counts,
 
     ## Compute regions for which estimate was outside usual range
 
-    ind <- which(fhat - qnorm(1 - alpha/2) * se >= 0)
-    if(length(ind) > 0){
-      cluster <- cumsum(c(2, diff(ind)) > 1)
-      indexes <- split(ind, cluster)
-      excess <- lapply(indexes, function(ind){
-        n <- length(ind)
-        excess_stats(min(counts$date[ind]),
-                     max(counts$date[ind]),
-                     counts$outcome[ind],
-                     counts$expected[ind],
-                     Sigma[ind, ind, drop = FALSE],
-                     counts$population[ind],
+    excess_ind <- which(fhat - qnorm(1 - alpha/2) * se >= 0)
+    if(length(excess_ind) > 0){
+      cluster <- cumsum(c(2, diff(excess_ind)) > 1)
+      indexes <- split(excess_ind, cluster)
+      excess <- lapply(indexes, function(i){
+        n <- length(i)
+        excess_stats(min(counts$date[ind[i]]),
+                     max(counts$date[ind[i]]),
+                     counts$outcome[ind[i]],
+                     counts$expected[ind[i]],
+                     Sigma[i, i, drop = FALSE],
+                     counts$population[ind[i]],
                      frequency,
-                     fhat[ind],
-                     X[ind,,drop=FALSE],
+                     fhat[i],
+                     X[i,,drop=FALSE],
                      betacov)
       })
       detected_intervals <- do.call(rbind, excess)

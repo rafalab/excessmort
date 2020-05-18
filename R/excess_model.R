@@ -29,7 +29,7 @@ excess_model <- function(counts,
       counts <- counts$counts
     }
   } else{
-    if(verbose) message("Expected counts not provided, calculating them.")
+    if(verbose) message("Computing expected counts.")
     counts <-  compute_expected(counts,
                                 exclude = exclude,
                                 knots.per.year = knots.per.year,

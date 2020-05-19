@@ -4,7 +4,7 @@
 \alias{approx_demographics}
 \title{Interpolate demographic data}
 \usage{
-approx_demographics(demo, first_day, last_day)
+approx_demographics(demo, first_day, last_day, by = c("year"))
 }
 \description{
 Interpolate demographic data

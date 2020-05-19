@@ -2,9 +2,12 @@
 % Please edit documentation in R/collapse_age_dist.R
 \name{collapse_age_dist}
 \alias{collapse_age_dist}
+\alias{collapse_counts_by_age}
 \title{Callapse age groups into broader ones}
 \usage{
 collapse_age_dist(demo, breaks)
+
+collapse_counts_by_age(counts, breaks)
 }
 \description{
 Callapse age groups into broader ones

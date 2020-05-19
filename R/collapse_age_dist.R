@@ -34,6 +34,7 @@ collapse_age_dist <- function(demo, breaks){
 
 
 
+
 #' @rdname collapse_age_dist
 #' @export
 

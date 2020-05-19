@@ -2,6 +2,7 @@
 
 export(approx_demographics)
 export(collapse_age_dist)
+export(collapse_counts_by_age)
 export(compute_counts)
 export(compute_expected)
 export(excess_cumulative)

@@ -35,6 +35,8 @@ collapse_age_dist <- function(demo, breaks){
 
 
 #' @rdname collapse_age_dist
+#' @export
+
 
 collapse_counts_by_age <- function(counts, breaks){
   ## assumes groups are start-end

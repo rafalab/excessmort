@@ -112,7 +112,7 @@ excess_model <- function(counts,
     knots <- x[round(seq(1, n, length = nknots + 2))]
     knots <- knots[-c(1, length(knots))]
     if(!is.null(event)){
-      event_index <- x[which(date == event)]
+      event_index <- x[which.min(abs(as.numeric(date - event)))]
       i <- which.min(abs(knots - event_index))
       ##shift knots so that one of the internal knots falls on the event day
       knots <- knots + (event_index -  knots[i])

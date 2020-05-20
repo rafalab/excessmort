@@ -18,8 +18,8 @@ excess_model <- function(counts,
                          max.control = 5000,
                          order.max = 14,
                          aic = TRUE,
-                         max.iter = 15,
-                         eps = 1e-8,
+                         maxit = 25,
+                         epsilon = 1e-8,
                          alpha = 0.05,
                          min.rate = 0.01,
                          verbose = TRUE){
@@ -128,9 +128,8 @@ excess_model <- function(counts,
 
     if(correlated.errors){
       fhat <- 0
-      beta <- 0; beta0 <- 1
-      count <- 0
-
+      beta <- 0;
+      dev<- 2*sum(ifelse(obs == 0, 0, obs * log(obs / mu)) - (obs - mu))
       ## convinience function
       mysolve <- function(x) chol2inv(chol(x))
 
@@ -140,23 +139,27 @@ excess_model <- function(counts,
       }
 
       ## start iterations
-      while(count < max.iter & sum((beta-beta0)^2) > eps){
+      count <- 0
+      flag <- TRUE
+      while(count < maxit & flag){
         if(length(arfit$ar) > 0 & s > 0){
           Sigma <- apply(abs(outer(1:n, 1:n, "-")) + 1, 1, function(i) rhos[i]) *
-            outer(sqrt(s^2 + (1+fhat)/mu), sqrt(s^2 + (1+fhat)/mu))
+            outer(sqrt((1+fhat)^2 * s^2 + (1+fhat)/mu), sqrt((1+fhat)^2 * s^2 + (1+fhat)/mu))
           Sigma_inv <- mysolve(Sigma)
         } else{
-          Sigma <- diag(s^2 + (1+fhat)/mu)
-          Sigma_inv <- diag(1/(s^2 + (1+fhat)/mu))
+          Sigma <- diag((1 + fhat)^2 * s^2 + (1+fhat) / mu)
+          Sigma_inv <- diag(1 / ( (1 + fhat)^2 * s^2 + (1+fhat) / mu))
         }
         ## fit spline using weighted least squares
         xwxi <- mysolve(t(X) %*% Sigma_inv %*% X)
-        beta0 <- beta
         beta <- xwxi %*% t(X) %*% Sigma_inv %*% y
         count <- count + 1
         fhat <- pmax(as.vector(X %*% beta), min.rate - 1)
+        devold <- dev
+        dev <- 2*sum(ifelse(obs == 0, 0, obs * log(obs / (mu*(1 + fhat)))) - (obs - mu*(1 + fhat)))
+        flag <- abs(dev - devold)/(0.1 + abs(dev)) >= epsilon
       }
-      if(count >= max.iter) warning("No convergence after ", max.iter, " iterations.")
+      if(count > maxit) warning("No convergence after ", maxit, " imterations.")
 
       se <- sqrt(apply(X, 1, function(x) matrix(x, nrow = 1) %*% xwxi %*% matrix(x, ncol = 1)))
       betacov <- xwxi
@@ -198,6 +201,7 @@ excess_model <- function(counts,
                 expected = mu,
                 fitted = fhat,
                 population = pop,
+                sd = sqrt(diag(Sigma)),
                 cov = Sigma,
                 x = X,
                 betacov = betacov,
@@ -215,7 +219,8 @@ excess_model <- function(counts,
 
   }
 
-  ## If intervals provided compute excess deaths in each one
+  ## If intervals provided compute excess deaths
+  ## The uncertainty is calculated under the null
   if(!is.null(intervals)){
     res <- lapply(intervals, function(dates){
       ind <- which(counts$date %in% dates)

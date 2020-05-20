@@ -22,8 +22,8 @@ excess_model(
   max.control = 5000,
   order.max = 14,
   aic = TRUE,
-  max.iter = 15,
-  eps = 1e-08,
+  maxit = 25,
+  epsilon = 1e-08,
   alpha = 0.05,
   min.rate = 0.01,
   verbose = TRUE

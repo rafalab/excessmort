@@ -15,10 +15,10 @@ excess_cumulative <- function(fit, start, end){
   fit_excess <- A %*% fhat
   obs_excess <- cumsum(fit$observed[ind] - fit$expected[ind])
   fitted_se <- sqrt(diag(A %*% fit$x[ind,] %*% fit$betacov %*% t(A %*% fit$x[ind,])))
-  se <- sqrt(diag(A %*% fit$cov[ind, ind] %*% t(A)))
+  sd <- sqrt(diag(A %*% fit$cov[ind, ind] %*% t(A)))
   data.frame(date = fit$date[ind],
              observed = obs_excess,
-             se = se,
+             sd = sd,
              fitted = fit_excess,
-             fitted_se = fitted_se)
+             se = fitted_se)
 }

@@ -5,24 +5,22 @@
 #'
 
 excess_plot <- function(fit, title = "", ylim = NULL,
-                        center = c("zero", "fit"),
                         show.data = TRUE,
-                        alpha = 0.01){
+                        alpha = 0.05){
 
   requireNamespace("ggplot2")
 
   z <- qnorm(1 - alpha/2)
 
-  if(match.arg(center) == "zero") center <- 0 else center <- fit$fitted
 
   p <- with(fit, data.frame(date = date,
                         y = 100 * (observed - expected)/expected,
                         increase = 100 * fitted,
-                        lower = 100 * (center - z*se),
-                        upper = 100 * (center + z*se))) %>%
-    ggplot(aes(date, y, ymin = lower, ymax = upper)) +
-    geom_ribbon(alpha = 0.5) +
-    geom_abline(intercept = 0, slope = 0) +
+                        sd = 100 * sd,
+                        se = 100 * se)) %>%
+    ggplot(aes(date, y)) +
+    geom_ribbon(aes(ymin = increase - z * se, ymax = increase + z * se), alpha = 0.5) +
+    geom_hline(yintercept = 0) +
     ylab("% increase from expected death rate") +
     ggtitle(title) +
     xlab("Date")

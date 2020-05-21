@@ -32,10 +32,8 @@ expected_plot <- function(expected, title = "",
       ungroup()
   }
 
-# so ----------------------------------------------------------------------
 
-
-  yl<- "Counts"
+  yl <- "Counts"
   if(weekly) yl <- paste("Weekly", yl)
   p <- dat %>%
     ggplot(aes(x = date)) +

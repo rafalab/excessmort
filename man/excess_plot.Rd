@@ -4,14 +4,7 @@
 \alias{excess_plot}
 \title{Plot results from fitted excess count model}
 \usage{
-excess_plot(
-  fit,
-  title = "",
-  ylim = NULL,
-  center = c("zero", "fit"),
-  show.data = TRUE,
-  alpha = 0.01
-)
+excess_plot(fit, title = "", ylim = NULL, show.data = TRUE, alpha = 0.01)
 }
 \description{
 Plot results from fitted excess count model

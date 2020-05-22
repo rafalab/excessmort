@@ -4,7 +4,7 @@
 #'
 compute_expected <- function(counts,
                              exclude = NULL,
-                             knots.per.year = 1/5,
+                             trend.knots.per.year = 1/5,
                              harmonics = 2,
                              frequency = NULL,
                              weekday.effect = TRUE,
@@ -66,7 +66,7 @@ compute_expected <- function(counts,
 
   # compute knots
   years <- (max(tt) - min(tt)) / 365
-  nknots <- round(years*knots.per.year) + 2
+  nknots <- round(years* trend.knots.per.year) + 2
   knots <- seq(min(tt), max(tt), length = nknots)
   knots <- knots[-c(1, length(knots))]
 
@@ -105,7 +105,7 @@ compute_expected <- function(counts,
 
   counts <- mutate(counts, expected = as.numeric(expected), excluded = !index)
   attr(counts, "dispersion") <- dispersion
-  attr(counts, "knots.per.year") <- 1/5
+  attr(counts, "trend.knots.per.year") <- 1/5
   attr(counts, "knots") <- knots
   attr(counts, "harmonics") <- harmonics
   attr(counts, "frequency") <- frequency

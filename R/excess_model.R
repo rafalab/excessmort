@@ -5,12 +5,12 @@ excess_model <- function(counts,
                          event = NULL,
                          start = NULL,
                          end = NULL,
-                         nknots = 12,
+                         knots.per.year = 12,
                          discontinuity = TRUE,
                          intervals = NULL,
                          model = c("quasipoisson", "poisson", "correlated"),
                          exclude = NULL,
-                         knots.per.year = 1/5,
+                         trend.knots.per.year = 1/5,
                          harmonics = 2,
                          frequency = NULL,
                          weekday.effect = TRUE,
@@ -32,7 +32,7 @@ excess_model <- function(counts,
     if(verbose) message("Computing expected counts.")
     counts <-  compute_expected(counts,
                                 exclude = exclude,
-                                knots.per.year = knots.per.year,
+                                trend.knots.per.year = trend.knots.per.year,
                                 harmonics = harmonics,
                                 frequency = frequency,
                                 weekday.effect = weekday.effect,
@@ -109,6 +109,7 @@ excess_model <- function(counts,
     if(correlated.errors) y <- (obs - mu) / mu
 
     ## create the design matrix
+    nknots <- round(knots.per.year * as.numeric(max(date) - min(date)) / 365)
     knots <- x[round(seq(1, n, length = nknots + 2))]
     knots <- knots[-c(1, length(knots))]
     if(!is.null(event)){

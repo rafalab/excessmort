@@ -7,7 +7,7 @@
 compute_expected(
   counts,
   exclude = NULL,
-  knots.per.year = 1/5,
+  trend.knots.per.year = 1/5,
   harmonics = 2,
   frequency = NULL,
   weekday.effect = TRUE,

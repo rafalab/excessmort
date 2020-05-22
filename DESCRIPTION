@@ -1,4 +1,4 @@
-Package: excessdeaths
+Package: excessmort
 Type: Package
 Title: Estimate excess deaths from daily count data
 Version: 0.1.0
@@ -14,7 +14,7 @@ Imports: stats,
     splines,
     ggplot2
 Suggests: tidycensus
-Description: Functions for estimating excess deaths, or other outcomes, from daily count data. 
+Description: Functions for estimating excess mortality and other health related outcomes from daily count data. 
 License: Artistic-2.0
 Encoding: UTF-8
 LazyData: true

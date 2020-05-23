@@ -6,6 +6,33 @@
 \usage{
 excess_cumulative(fit, start, end)
 }
+\arguments{
+\item{fit}{The output of `excess_model`}
+
+\item{start}{The start date}
+
+\item{end}{The end date}
+}
+\value{
+A data frame with the following columns
+\describe{
+\item{date}{The date}
+\item{observed}{The observed excess mortality,which is the sum of observed minus expected until that date}
+\item{sd}{The standard deviation for excess mortality for that date if year is typical}
+\item{fitted}{The estimated of excess mortality based on the estimated smooth event effect curve}
+\item{se}{The standard error for `fitted`}
+}
+}
 \description{
-Compute cumulative excess deaths
+This function takes the output of the `excess_model` function, a start date, and 
+end date and calculates excess mortality and standard errors.
+}
+\examples{
+data(florida_counts)
+exclude_dates <- as.Date("2017-09-10") + 0:180
+f <- excess_model(florida_counts, start = as.Date("2017-9-1"), end = as.Date("2018-9-1"), exclude = exclude_dates)
+excess_cumulative(f, 
+start = as.Date("2017-12-15"), 
+end = as.Date("2017-12-21") )
+
 }

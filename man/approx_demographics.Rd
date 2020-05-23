@@ -4,8 +4,21 @@
 \alias{approx_demographics}
 \title{Interpolate demographic data}
 \usage{
-approx_demographics(demo, first_day, last_day, by = c("year"))
+approx_demographics(demo, first_day, last_day, by = "year")
+}
+\arguments{
+\item{demo}{A data frame with the yearly population estimates}
+
+\item{first_day}{First day to interpolate}
+
+\item{last_day}{Last day to interpolate.}
+
+\item{by}{What should we group by, for example different demographic strata}
+}
+\value{
+A data frame with dates and population estimates
 }
 \description{
-Interpolate demographic data
+Interpolate yearly population estimates so that a population estimate is provided for 
+each day of the year. The function `approx` is used with `rule = 2` for extrapolatin.
 }

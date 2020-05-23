@@ -6,6 +6,9 @@
 \usage{
 noleap_yday(x)
 }
+\arguments{
+\item{x}{date}
+}
 \description{
 Compute year of the day ingoring Feb 29
 }

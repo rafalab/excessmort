@@ -1,4 +1,27 @@
+#' Plot Expeceted Counts
+#' 
 #' Check if expected counts fit data
+#' 
+#' @param expected The output from `excess_counts`
+#' @param title A title to add to plot
+#' @param start First day ro show
+#' @param end Last day to show
+#' @param ylim A vector with two numbers that determines the kimits for the y-axis
+#' @param weekly Logical that determines if data should be summarized into weekly counts
+#' @param color Color for the expected curve
+#' @param alpha alpha blending for points
+#' @examples
+#' data(florida_counts)
+#' exclude_dates <- as.Date("2017-09-10") + 0:180
+#' e <- compute_expected(florida_counts, 
+#' exclude = exclude_dates)
+#' 
+#' library(ggplot2)
+#' expected_plot(e,
+#' start = as.Date("2017-9-1"), 
+#' end = as.Date("2018-9-1"), )
+#' 
+
 #' @export
 #' @import dplyr
 #' @importFrom stats qnorm

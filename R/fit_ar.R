@@ -1,4 +1,13 @@
 #' Fit an ar model to residuals from expected counts
+#' 
+#' Helper function to estimate autoregressive mode
+#' 
+#' @param counts Output from `compute_excpected`
+#' @param control.dates Dates to use to estimate covariance
+#' @param order.max Maximum order of autoregressive process
+#' @param aic Logical that determines if AIC is used
+#' @param plot logical that determines if an autocorrelation plot is generated for exploration purposes
+#' 
 #' @importFrom stats ar acf
 #' @importFrom graphics plot
 

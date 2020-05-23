@@ -1,4 +1,8 @@
 #' Assign age to group
+#' 
+#' @param age Vector of ages
+#' @param breaks Ages that define strata
+#' 
 #' @export
 #' @importFrom stats reorder
 

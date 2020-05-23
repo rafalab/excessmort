@@ -23,7 +23,8 @@
 #' @examples
 #' data("cook_records")
 #' the_breaks <- c(0, 20, 40, 60, 75, Inf)
-#' compute_counts(cook_records, demo = cook_demographics, by = c("agegroup", "race", "sex"), breaks = the_breaks)
+#' compute_counts(cook_records, demo = cook_demographics, 
+#' by = c("agegroup", "race", "sex"), breaks = the_breaks)
 #' 
 #' @export
 #' @import dplyr

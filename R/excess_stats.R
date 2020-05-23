@@ -1,4 +1,18 @@
+#' Excess counts in an interval
+#' 
 #' Helper funtion to compute excess deaths statistics for a
+#' 
+#' @param start First day of interval
+#' @param end Last day of interval
+#' @param obs Observed coundes
+#' @param mu Expected counts
+#' @param cov Covariance matrix for percent change
+#' @param pop Population size
+#' @param frequency Observations per year
+#' @param fhat Estimated percent increase
+#' @param X Design matrix used to estimate fhat
+#' @param betacov Covariance matrix for parameter estimates used to estimate fhat
+#' 
 #' @importFrom stats ARMAacf
 #'
 #'

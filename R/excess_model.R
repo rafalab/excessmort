@@ -1,13 +1,78 @@
 #' Fit excess count model
+#' 
+#' This function estimates the increase in the rate for a count time series relative to 
+#' the rate for a typical year. Two options are available: 1 - model the rate increase as a 
+#' smooth function and estimate this function or 2 - estimate the total excess in intervals. 
+#' For 1m an `event` date can be provided and a discontinuity included in the model.
+#' You can do either 1 or 2 or both. 
+#' 
+#' Three versions of the model are available: 1 - Assume counts are Poisson distributed, 
+#' 2 - assume counts are overdispersed Poisson, or 3 - assume a mixed model with 
+#' correlated errors. The second is the default, but we often find evidence of correlation.
+#' 
+#' If the `counts` object includes a `expected` column produced by `compute_expected` these are used
+#' as the expected counts. If not, then these are computed.
+#' 
+#' 
+#' @param counts A data frame with date, count and population columns.
+#' @param start First day of interval to which model will be fit
+#' @param end Last day of interval to which model will be fit
+#' @param knots.per.year Number of knots per year used for the fitted smooth function
+#' @param event If modeling a discontinuity is desired, this is the day in which it happens
+#' @param intervals Instead of `start` and `end` a list of time intervals can be provided and excess is computed in each one
+#' @param discontinuity Logical that determines if discontinuity is allowed at `event`
+#' @param model Which version of the model to fit
+#' @param exclude Dates to exclude when computing expected counts
+#' @param trend.knots.per.year Number of knots per year used by `compute_expected` to estimate the trend for the expected counts
+#' @param harmonics Number of harmonics used by `compute_expected` to estimate seasonal trend
+#' @param frequency Number of observations per year. If not provided an attempt is made to calculate it
+#' @param weekday.effect Logical that determins if a day of the week effects is included in the model. Should be `FALSE` for weekly or monthly data.
+#' @param control.dates When `model` is set to `correlated`, these dates are used to estimate the covariance matrix. The larger this is the slower the function runs.
+#' @param max.control If the length of `control.dates` is larger than `max.control` the function stops.
+#' @param order.max Larges order for the Autoregressive process used to model the covariance structure
+#' @param aic A logical that determines if the AIC criterion is used to selected the order of the AR process
+#' @param maxit Maxium number of iterations for the IRLS algorithm used when `model` is `correlated`
+#' @param epsilon Difference in deviance requried to declare covergenace of IRLS
+#' @param alpha Percentile used to define what is outside the normal range
+#' @param min.rate The estimated expected rate is not permited to go below this value
+#' @param verbose Logical that determines if messages are displayed
+#' 
+#' @return If only `intervals` are provided a data frame with excess estimates described below for `excess`. 
+#' if `start` and `end` are provided the a list with the following components are included:
+#' \describe{
+#' \item{date}{The dates for which the estimate was computed}
+#' \item{observed}{The observed counts}
+#' \item{expected}{The expected counts}
+#' \item{fitted}{The fitted curve for excess counts}
+#' \item{se}{The point-wise standard error for the fitted curve}
+#' \item{population}{The population size}
+#' \item{sd}{The standard deviation for observed counts on a typical year}
+#' \item{cov}{The estimated covariance matrix for the observed counts}
+#' \item{x}{The design matrix used for the fit}
+#' \item{betacov}{The covariance matrix for the estimated coefficients}
+#' \item{dispersion}{The estimated overdispersion parameter}
+#' \item{detected_intervals}{Time intervals for which the 1 - `alpha` confidence interval does not include 0}
+#' \item{ar}{The estimated coefficients for the autoregressive process}
+#' \item{excess}{A data frame with information for the time intervals provided in `itervals`. This includes start, end, observed death rate (per 1,000 per year), expected death rate, standard deviation for the death rate, observed counts, expected counts, excess counts, standard deviation}
+#' }
+#' 
+#' #' @examples
+#' data(florida_counts)
+#' exclude_dates <- as.Date("2017-09-10") + 0:180
+#' f <- excess_model(florida_counts, 
+#' start = as.Date("2017-9-1"), 
+#' end = as.Date("2018-9-1"), 
+#' exclude = exclude_dates)
+#' 
 #' @export
 #' @importFrom stats ARMAacf glm poly qnorm
 excess_model <- function(counts,
-                         event = NULL,
                          start = NULL,
                          end = NULL,
                          knots.per.year = 12,
-                         discontinuity = TRUE,
+                         event = NULL,
                          intervals = NULL,
+                         discontinuity = TRUE,
                          model = c("quasipoisson", "poisson", "correlated"),
                          exclude = NULL,
                          trend.knots.per.year = 1/5,
@@ -59,7 +124,7 @@ excess_model <- function(counts,
   }
 
   if(length(control.dates) > max.control & correlated.errors)
-    warning("Length of control longer than", max.control,". May result in long wait.")
+   stop("Length of control longer than", max.control)
 
   if((is.null(start) & !is.null(end)) | (!is.null(start) & is.null(end)))
     stop("You must provide both start and end, not just one.")
@@ -201,13 +266,13 @@ excess_model <- function(counts,
                 observed = obs,
                 expected = mu,
                 fitted = fhat,
+                se = se,
                 population = pop,
                 sd = sqrt(diag(Sigma)),
                 cov = Sigma,
                 x = X,
                 betacov = betacov,
                 dispersion = dispersion,
-                se = se,
                 detected_intervals = detected_intervals)
 
     attr(ret, "frequency") <- frequency

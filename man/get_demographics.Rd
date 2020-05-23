@@ -12,6 +12,17 @@ get_demographics(
   vars = c("SEX", "AGEGROUP", "RACE", "HISP")
 )
 }
+\arguments{
+\item{geography}{state or county}
+
+\item{state}{name of the state}
+
+\item{county}{name of the county}
+
+\item{years}{vector of years for which we obtain data}
+
+\item{vars}{names of variables that define strat of which we want population estimates}
+}
 \description{
 Get demographic data from Census
 }

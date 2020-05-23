@@ -1,7 +1,24 @@
 #' Plot results from fitted excess count model
+#' 
+#' @param fit The output from `excess_model`
+#' @param title A title to add to plot
+#' @param ylim A vector with two numbers that determines the kimits for the y-axis
+#' @param show.data A logical that determines if the observed percent changes are shown
+#' @param alpha  1 - `alpha` confidence intervals are shown
+#' @examples
+#' data(florida_counts)
+#' exclude_dates <- as.Date("2017-09-10") + 0:180
+#' f <- excess_model(florida_counts, 
+#' start = as.Date("2017-9-1"), 
+#' end = as.Date("2018-9-1"), 
+#' exclude = exclude_dates)
+#' 
+#' library(ggplot2)
+#' excess_plot(f)
+#' 
 #' @export
 #' @importFrom stats qnorm
-#' @importFrom ggplot2 ggplot geom_ribbon ylab xlab geom_point coord_cartesian geom_line
+#' @importFrom ggplot2 ggplot geom_hline ggtitle aes geom_ribbon ylab xlab geom_point coord_cartesian geom_line
 #'
 
 excess_plot <- function(fit, title = "", ylim = NULL,

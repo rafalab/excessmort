@@ -2,7 +2,7 @@
 % Please edit documentation in R/excess_stats.R
 \name{excess_stats}
 \alias{excess_stats}
-\title{Helper funtion to compute excess deaths statistics for a}
+\title{Excess counts in an interval}
 \usage{
 excess_stats(
   start,
@@ -16,6 +16,27 @@ excess_stats(
   X = NULL,
   betacov = NULL
 )
+}
+\arguments{
+\item{start}{First day of interval}
+
+\item{end}{Last day of interval}
+
+\item{obs}{Observed coundes}
+
+\item{mu}{Expected counts}
+
+\item{cov}{Covariance matrix for percent change}
+
+\item{pop}{Population size}
+
+\item{frequency}{Observations per year}
+
+\item{fhat}{Estimated percent increase}
+
+\item{X}{Design matrix used to estimate fhat}
+
+\item{betacov}{Covariance matrix for parameter estimates used to estimate fhat}
 }
 \description{
 Helper funtion to compute excess deaths statistics for a

@@ -9,6 +9,18 @@ collapse_age_dist(demo, breaks)
 
 collapse_counts_by_age(counts, breaks)
 }
+\arguments{
+\item{demo}{A data frame with population sizes for different groups that will be collapsed}
+
+\item{breaks}{The new age breaks for the new, broader, age strata}
+
+\item{counts}{A data frame with counts and population sizes for different groups that will be collapsed}
+}
 \description{
-Callapse age groups into broader ones
+Collapse a count or demographic data frame into a broader age strata.
+}
+\examples{
+data(cook_records)
+demo <- collapse_age_dist(cook_demographics, breaks = c(0, 20, 40, 60, 80, Inf))
+
 }

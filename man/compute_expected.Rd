@@ -15,6 +15,36 @@ compute_expected(
   verbose = TRUE
 )
 }
+\arguments{
+\item{counts}{A data frame with dates, counts, and population size}
+
+\item{exclude}{A list of dates to exclude when fitting the model}
+
+\item{trend.knots.per.year}{Number of knots per year used for the time trend}
+
+\item{harmonics}{Nuber of harmoincs to include in the seasonal effect}
+
+\item{frequency}{Number of data points per year. If not provided, the function attempts to estimate it}
+
+\item{weekday.effect}{A logical that determines if a day of the week effect is included in the model}
+
+\item{keep.components}{A logical that if `TRUE` forces the function to return the estimated trend, seaonal effect, and weekday effect, if included in the modl.}
+
+\item{verbose}{A logical that if `TRUE` makes function prints out updates on the estimation procedure}
+}
 \description{
-Compute expected counts for each day
+Compute the expected death count for each unit of time. 
+We assume counts are oversispersed Poisson distributed with a 
+trend that accounts for changes in death rate across time and a seasonal effect. The function take data frame with 
+dates and counts and returns the data frame with the expected counts as a new 
+column. It also returns a logical column that is `TRUE` if that entry was 
+used in the estimation procedure.
+}
+\examples{
+data(florida_counts)
+exclude_dates <- as.Date("2017-09-10") + 0:180
+counts <- compute_expected(florida_counts, exclude = exclude_dates)
+library(ggplot2)
+expected_plot(counts)
+
 }

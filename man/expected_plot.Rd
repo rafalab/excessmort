@@ -2,7 +2,7 @@
 % Please edit documentation in R/expected_plot.R
 \name{expected_plot}
 \alias{expected_plot}
-\title{Check if expected counts fit data}
+\title{Plot Expeceted Counts}
 \usage{
 expected_plot(
   expected,
@@ -15,6 +15,35 @@ expected_plot(
   alpha = 1
 )
 }
+\arguments{
+\item{expected}{The output from `excess_counts`}
+
+\item{title}{A title to add to plot}
+
+\item{start}{First day ro show}
+
+\item{end}{Last day to show}
+
+\item{ylim}{A vector with two numbers that determines the kimits for the y-axis}
+
+\item{weekly}{Logical that determines if data should be summarized into weekly counts}
+
+\item{color}{Color for the expected curve}
+
+\item{alpha}{alpha blending for points}
+}
 \description{
 Check if expected counts fit data
+}
+\examples{
+data(florida_counts)
+exclude_dates <- as.Date("2017-09-10") + 0:180
+e <- compute_expected(florida_counts, 
+exclude = exclude_dates)
+
+library(ggplot2)
+expected_plot(e,
+start = as.Date("2017-9-1"), 
+end = as.Date("2018-9-1"), )
+
 }

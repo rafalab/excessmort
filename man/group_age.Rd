@@ -6,6 +6,11 @@
 \usage{
 group_age(age, breaks)
 }
+\arguments{
+\item{age}{Vector of ages}
+
+\item{breaks}{Ages that define strata}
+}
 \description{
 Assign age to group
 }

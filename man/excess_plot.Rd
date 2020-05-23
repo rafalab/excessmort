@@ -6,6 +6,29 @@
 \usage{
 excess_plot(fit, title = "", ylim = NULL, show.data = TRUE, alpha = 0.05)
 }
+\arguments{
+\item{fit}{The output from `excess_model`}
+
+\item{title}{A title to add to plot}
+
+\item{ylim}{A vector with two numbers that determines the kimits for the y-axis}
+
+\item{show.data}{A logical that determines if the observed percent changes are shown}
+
+\item{alpha}{1 - `alpha` confidence intervals are shown}
+}
 \description{
 Plot results from fitted excess count model
+}
+\examples{
+data(florida_counts)
+exclude_dates <- as.Date("2017-09-10") + 0:180
+f <- excess_model(florida_counts, 
+start = as.Date("2017-9-1"), 
+end = as.Date("2018-9-1"), 
+exclude = exclude_dates)
+
+library(ggplot2)
+excess_plot(f)
+
 }

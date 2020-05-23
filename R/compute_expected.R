@@ -1,8 +1,27 @@
 #' Compute expected counts for each day
 #' 
-#' Compute the expected death count for each unit of time. We assum a slow time trend and a seasonal effect. 
+#' Compute the expected death count for each unit of time. 
+#' We assume counts are oversispersed Poisson distributed with a 
+#' trend that accounts for changes in death rate across time and a seasonal effect. The function take data frame with 
+#' dates and counts and returns the data frame with the expected counts as a new 
+#' column. It also returns a logical column that is `TRUE` if that entry was 
+#' used in the estimation procedure.
 #' 
+#' @param counts A data frame with dates, counts, and population size
+#' @param exclude A list of dates to exclude when fitting the model
+#' @param trend.knots.per.year Number of knots per year used for the time trend
+#' @param harmonics Nuber of harmoincs to include in the seasonal effect
+#' @param frequency Number of data points per year. If not provided, the function attempts to estimate it
+#' @param weekday.effect A logical that determines if a day of the week effect is included in the model
+#' @param keep.components A logical that if `TRUE` forces the function to return the estimated trend, seaonal effect, and weekday effect, if included in the modl.
+#' @param verbose A logical that if `TRUE` makes function prints out updates on the estimation procedure
 #' 
+#' @examples
+#' data(florida_counts)
+#' exclude_dates <- as.Date("2017-09-10") + 0:180
+#' counts <- compute_expected(florida_counts, exclude = exclude_dates)
+#' library(ggplot2)
+#' expected_plot(counts)
 #' 
 #' @export
 #' @importFrom stats glm contr.sum model.matrix contrasts<-
@@ -23,7 +42,7 @@ compute_expected <- function(counts,
 
   if(any(c("expeceted", "excluded") %in% names(counts))) warning("expected and excluded columns will be overwritten.")
 
-  if(any(is.na(counts$date)) | any(is.na(counts$outcome)) | any(is.na(population)))
+  if(any(is.na(counts$date)) | any(is.na(counts$outcome)) | any(is.na(counts$population)))
     stop("No NAs permited in date, outcome, or population columns.")
 
   if(!lubridate::is.Date(counts$date)) stop("date column must be class Date.")
@@ -71,7 +90,7 @@ compute_expected <- function(counts,
 
   # compute knots
   years <- (max(tt) - min(tt)) / 365
-  nknots <- round(years* trend.knots.per.year) + 2
+  nknots <- round(years*trend.knots.per.year) + 2
   knots <- seq(min(tt), max(tt), length = nknots)
   knots <- knots[-c(1, length(knots))]
 

@@ -1,8 +1,19 @@
 #' Interpolate demographic data
+#' 
+#' Interpolate yearly population estimates so that a population estimate is provided for 
+#' each day of the year. The function `approx` is used with `rule = 2` for extrapolatin.
+#' 
+#' @param demo A data frame with the yearly population estimates
+#' @param first_day First day to interpolate
+#' @param last_day Last day to interpolate.
+#' @param by What should we group by, for example different demographic strata
+#' 
+#' @return A data frame with dates and population estimates
 #' @export
 #' @importFrom stats approx
 #' @import dplyr
-approx_demographics <- function(demo, first_day, last_day, by=c("year"))
+#' 
+approx_demographics <- function(demo, first_day, last_day, by = "year")
 {
   ################## ----- PARAMETERS ----- ##################
   # 1. demo      : Dataframe from the function getDemographics()

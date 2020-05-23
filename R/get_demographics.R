@@ -1,4 +1,9 @@
 #' Get demographic data from Census
+#' @param geography state or county
+#' @param state name of the state
+#' @param county name of the county
+#' @param years vector of years for which we obtain data
+#' @param vars names of variables that define strat of which we want population estimates
 #' @export
 #' @importFrom stats setNames
 #' @import dplyr

@@ -2,7 +2,7 @@
 % Please edit documentation in R/compute_counts.R
 \name{compute_counts}
 \alias{compute_counts}
-\title{Compute daily death counts for groups from individual records}
+\title{Compute counts}
 \usage{
 compute_counts(
   dat,
@@ -14,6 +14,38 @@ compute_counts(
   breaks = NULL
 )
 }
+\arguments{
+\item{dat}{The data frame with the individual records}
+
+\item{by}{A character vector with the column names the define the groups for which we will compute counts}
+
+\item{demo}{A data frame with population sizes for each time point for each of the groups for which we will compute counts}
+
+\item{date}{The column name of the column that contains dates}
+
+\item{age}{The column name of the column that contains age}
+
+\item{agegroup}{The column name of the column that contains agegroup}
+
+\item{breaks}{The ages that define the agegroups}
+}
+\value{
+A data frame with counts for each group for each date with population sizes, if demo was provided
+}
 \description{
-Compute daily death counts for groups from individual records
+Compute counts for groups from individual records
+}
+\details{
+This is helper function that helps convert individual records data, in which each death is a row, 
+to a count data frame where each row is a date. It is particulalry helpful for defining agegroups. If you
+provide the `breaks` argument it will automaticall divided the data and provide the counts for each age strata. 
+You can also select variables to group by using the `by` argument. 
+One can provide a data frame with demogrpahic inform through the `demo` argument. This tabe must have the 
+population size for each group for each data.
+}
+\examples{
+data("cook_records")
+the_breaks <- c(0, 20, 40, 60, 75, Inf)
+compute_counts(cook_records, demo = cook_demographics, by = c("agegroup", "race", "sex"), breaks = the_breaks)
+
 }

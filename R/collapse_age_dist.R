@@ -1,5 +1,14 @@
 #' Callapse age groups into broader ones
 #'
+#' Collapse a count or demographic data frame into a broader age strata. 
+#' 
+#' @param demo A data frame with population sizes for different groups that will be collapsed
+#' @param breaks The new age breaks for the new, broader, age strata
+#' 
+#' @example
+#' data(cook_records)
+#' collapse_age_dist(cook_demographics, breaks = c(0, 20, 40, 60, 80, Inf))
+#' 
 #' @export
 #' @importFrom stats reorder
 #' @import dplyr

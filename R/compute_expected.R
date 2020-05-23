@@ -1,4 +1,9 @@
 #' Compute expected counts for each day
+#' 
+#' Compute the expected death count for each unit of time. We assum a slow time trend and a seasonal effect. 
+#' 
+#' 
+#' 
 #' @export
 #' @importFrom stats glm contr.sum model.matrix contrasts<-
 #'

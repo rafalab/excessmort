@@ -1,12 +1,12 @@
 #' Interpolate demographic data
 #' 
 #' Interpolate yearly population estimates so that a population estimate is provided for 
-#' each day of the year. The function `approx` is used with `rule = 2` for extrapolatin.
+#' each day of the year. The function `approx` is used with `rule = 2` for extrapolation.
 #' 
 #' @param demo A data frame with the yearly population estimates
 #' @param first_day First day to interpolate
 #' @param last_day Last day to interpolate.
-#' @param by What should we group by, for example different demographic strata
+#' @param by Vector of column names to group by, for example different demographic strata
 #' 
 #' @return A data frame with dates and population estimates
 #' @export

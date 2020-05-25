@@ -30,7 +30,10 @@ end date and calculates excess mortality and standard errors.
 \examples{
 data(florida_counts)
 exclude_dates <- as.Date("2017-09-10") + 0:180
-f <- excess_model(florida_counts, start = as.Date("2017-9-1"), end = as.Date("2018-9-1"), exclude = exclude_dates)
+f <- excess_model(florida_counts, 
+start = as.Date("2017-9-1"), 
+end = as.Date("2018-9-1"), 
+exclude = exclude_dates)
 excess_cumulative(f, 
 start = as.Date("2017-12-15"), 
 end = as.Date("2017-12-21") )

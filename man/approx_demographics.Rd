@@ -13,12 +13,12 @@ approx_demographics(demo, first_day, last_day, by = "year")
 
 \item{last_day}{Last day to interpolate.}
 
-\item{by}{What should we group by, for example different demographic strata}
+\item{by}{Vector of column names to group by, for example different demographic strata}
 }
 \value{
 A data frame with dates and population estimates
 }
 \description{
 Interpolate yearly population estimates so that a population estimate is provided for 
-each day of the year. The function `approx` is used with `rule = 2` for extrapolatin.
+each day of the year. The function `approx` is used with `rule = 2` for extrapolation.
 }

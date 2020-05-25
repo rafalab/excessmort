@@ -4,10 +4,10 @@
 #' This data frame includes thes estimates for each state along with population sizes.
 #'  
 #'  \itemize{
-#'  \item state: Name of USA state
-#'  \item date: Corresponding date of observation
-#'  \item outcome: Estimated number of deaths
-#'  \item population: Population estimate (from the Census)}
+#'  \item state Name of USA state
+#'  \item date Corresponding date of observation
+#'  \item outcome Estimated number of deaths
+#'  \item population Population estimate (from the Census)}
 #'  
 #' @usage data(cdc_state_counts)
 #' 

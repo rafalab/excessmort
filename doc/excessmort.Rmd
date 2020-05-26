@@ -30,33 +30,34 @@ If you start with record-level data, it is useful to also have a data frame with
 As an example of record-level data we include the `cook-records` dataset.
 
 ```{r message=FALSE, warning=FALSE}
+library(knitr)
 library(dplyr)
 library(ggplot2)
 library(excessmort)
 dslabs::ds_theme_set()
 
 data("cook_records")
-head(cook_records)
+kable(head(cook_records))
 ```
 
 Note that this also loads a demographic data table:
 
 ```{r}
-head(cook_demographics)
+kable(head(cook_demographics))
 ```
 
 If you have record-level data, a first step in the analysis is to convert it to count-level data. We provide the `compute_counts` function to help with this:
 
 ```{r}
 counts <- compute_counts(cook_records)
-head(counts)
+kable(head(counts))
 ```
 
 The `demo` argument permits you to include demographic information:
 
 ```{r}
 counts <- compute_counts(cook_records, demo = cook_demographics)
-head(counts)
+kable(head(counts))
 ```
 
 Note that the table provided to the `demo` argument must have population size for each date of interest. The function `approx_demographics` can interpolate yearly data into daily data. The function `get_demographics` can help you get data directly from Census. But a Census API key is required.  You can obtain one at http://api.census.gov/data/key_signup.html, and then supply the key to the `census_api_key` function to use it throughout your tidycensus session.
@@ -66,7 +67,7 @@ The `compute_counts` has a special argument to define agegroups which you can us
 ```{r}
 counts <- compute_counts(cook_records, by = "agegroup", demo = cook_demographics, 
                          breaks = c(0,20,40,60,80,Inf))
-head(counts)
+kable(head(counts))
 ```
 
 The breaks need to be a subset of the breaks used in the demographic data frame. You can also obtain counts for different demographics as long as they are included in the records-level data. A population size will be provided as long as the demographic variables match.
@@ -75,7 +76,7 @@ The breaks need to be a subset of the breaks used in the demographic data frame.
 counts <- compute_counts(cook_records, by = c("agegroup", "race", "sex"), 
                          demo = cook_demographics, 
                          breaks = c(0,20,40,60,80,Inf))
-head(counts)
+kable(head(counts))
 ```
 
 
@@ -123,7 +124,7 @@ counts <- cdc_state_counts %>%
   filter(state == "Massachusetts") %>%
   compute_expected(exclude = exclude_dates, weekday.effect = FALSE)
 
-head(counts)
+kable(head(counts))
 ```
 
 You can make a quick plot showing the expected and observed data using the `expected_plot` function:

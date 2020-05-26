@@ -3,35 +3,36 @@ knitr::opts_chunk$set(echo = TRUE)
 options(digits = 3)
 
 ## ----message=FALSE, warning=FALSE---------------------------------------------
+library(knitr)
 library(dplyr)
 library(ggplot2)
 library(excessmort)
 dslabs::ds_theme_set()
 
 data("cook_records")
-head(cook_records)
+kable(head(cook_records))
 
 ## -----------------------------------------------------------------------------
-head(cook_demographics)
+kable(head(cook_demographics))
 
 ## -----------------------------------------------------------------------------
 counts <- compute_counts(cook_records)
-head(counts)
+kable(head(counts))
 
 ## -----------------------------------------------------------------------------
 counts <- compute_counts(cook_records, demo = cook_demographics)
-head(counts)
+kable(head(counts))
 
 ## -----------------------------------------------------------------------------
 counts <- compute_counts(cook_records, by = "agegroup", demo = cook_demographics, 
                          breaks = c(0,20,40,60,80,Inf))
-head(counts)
+kable(head(counts))
 
 ## -----------------------------------------------------------------------------
 counts <- compute_counts(cook_records, by = c("agegroup", "race", "sex"), 
                          demo = cook_demographics, 
                          breaks = c(0,20,40,60,80,Inf))
-head(counts)
+kable(head(counts))
 
 ## ---- message=FALSE, warning=FALSE--------------------------------------------
 library(dplyr)
@@ -45,7 +46,7 @@ counts <- cdc_state_counts %>%
   filter(state == "Massachusetts") %>%
   compute_expected(exclude = exclude_dates, weekday.effect = FALSE)
 
-head(counts)
+kable(head(counts))
 
 ## -----------------------------------------------------------------------------
 expected_plot(counts)

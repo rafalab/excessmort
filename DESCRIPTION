@@ -1,7 +1,7 @@
 Package: excessmort
 Type: Package
 Title: Estimate excess deaths from daily count data
-Version: 0.2.0
+Version: 0.2.1
 Author: Rafael A. Irizarry, Rolando Acosta
 Maintainer: Rafael A. Irizarry <rafael_irizarry@dfci.harvard.edu>
 Depends: R (>= 3.5.0),
@@ -13,7 +13,7 @@ Imports: stats,
     lubridate,
     splines,
     ggplot2
-Suggests: tidycensus, knitr, rmarkdown, dslabs
+Suggests: tidycensus, knitr, rmarkdown
 VignetteBuilder: knitr
 Description: Functions for estimating excess mortality and other health related outcomes from daily count data. 
 License: Artistic-2.0

@@ -34,7 +34,6 @@ library(knitr)
 library(dplyr)
 library(ggplot2)
 library(excessmort)
-dslabs::ds_theme_set()
 
 data("cook_records")
 kable(head(cook_records))

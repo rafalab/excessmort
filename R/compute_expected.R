@@ -140,7 +140,7 @@ compute_expected <- function(counts,
     seasonal <- data.frame(day = seq(1, 365, length = frequency),
                            s = exp(fourier_trend(seq(1, 365, length=frequency), k = harmonics)  %*% fit$coefficients[i_h]) -1)
 
-    trend <- exp(x_t %*% fit$coefficients[i_t])  * frequency * 1000
+    trend <- as.numeric(exp(x_t %*% fit$coefficients[i_t])  * frequency * 1000)
 
     if(weekday.effect){
       w <- factor(1:7)

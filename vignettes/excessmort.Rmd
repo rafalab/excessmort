@@ -1,0 +1,242 @@
+---
+title: "Introduction to excessmort"
+author: "Rafael Irizarry and Rolando Acosta"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to excessmort}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(digits = 3)
+```
+
+This document is an introduction to excessmort package for analyzing time series count data. The packages was designed to help estimate excess mortality from daily death count data, but can be applied to weekly and monthly data and outcomes other than death.
+
+# Data types
+
+There are two main data types that the package works with
+
+* records - Each row represents a death and includes individual level information. 
+* count tables - Each row repress a date and includes a count and population size.
+
+If you start with record-level data, it is useful to also have a data frame with population sizes fro groups of interest. We expect a population size for each date.
+
+## Record-level data
+
+As an example of record-level data we include the `cook-records` dataset.
+
+```{r}
+library(dplyr)
+library(ggplot2)
+dslabs::ds_theme_set()
+library(excessmort)
+data("cook_records")
+head(cook_records)
+```
+
+Note that this also loads a demographic data table:
+
+```{r}
+head(cook_demographics)
+```
+
+If you have record-level data, a first step in the analysis is to convert it to count level data. We provide the `compute_counts` function to help with this:
+
+```{r}
+counts <- compute_counts(cook_records)
+head(counts)
+```
+
+The `demo` argument permits you to include demographic information:
+
+```{r}
+counts <- compute_counts(cook_records, demo = cook_demographics)
+head(counts)
+```
+
+Note that the table provided to the `demo` argument must have population size for each date of interest. The function `approx_demographics` can interpolate yearly data into daily data. The function `get_demographics` can help you get data directly from Census. But a Census API key is required.  You can obtain one at http://api.census.gov/data/key_signup.html, and then supply the key to the `census_api_key` function to use it throughout your tidycensus session.
+
+The `compute_counts` has a special argument to define agegroups which you can do like this:
+
+```{r}
+counts <- compute_counts(cook_records, by = "agegroup", demo = cook_demographics, 
+                         breaks = c(0,20,40,60,80,Inf))
+head(counts)
+```
+
+The breaks need to be a subset of the breaks used in the demographic data frame.
+
+You can also obtain counts for different demographics as long as they are included in the records-level data. A population size will be provided as long as the demographic variables match.
+
+```{r}
+counts <- compute_counts(cook_records, by = c("agegroup", "race", "sex"), 
+                         demo = cook_demographics, 
+                         breaks = c(0,20,40,60,80,Inf))
+head(counts)
+```
+
+
+## Count-level data
+
+Count-level data are assumed to have at least three columns: `date`, `outcome` and `population`. These exact names need to be used for some of the package functions to work.
+
+The package includes several examples of count-level data:
+
+|Dataset | Description|
+|---------|-----------------------|
+|cdc_state_counts     |      Weekly death counts for each USA state|
+|florida_counts        |     Florida daily mortality|
+|icd (puerto_rico_icd)  |    Puerto Rico daily mortality by cause of death|
+|louisiana_counts        |   Louisiana daily mortality|
+|new_jersey_counts        |  New Jersey daily mortality|
+|puerto_rico_counts        | Puerto Rico daily mortality|
+|puerto_rico_icd            |Puerto Rico daily mortality by cause of death|
+
+
+# Computing Expected counts
+
+A first step in most analysis is to estimate the expected count.The `compute_expected` function does this. We do this by assuming the counts $Y_t$ are an overdispresed Poisson random variable with  expected value
+\begin{equation}
+    \mu_t =N_t \exp[\alpha(t) + s(t) + w(t)]
+\end{equation}
+with $N_t$ the population at time $t$, $\alpha(t)$ a slow trend to account for the increase in life expectancy we have seen in the last few decades, a seasonal trend $s(t)$ to account for more deaths during the winter, an a day of the week effect $w(t)$.
+
+Because we are often fitting this model to estimate the effect of a natural disaster or outbreak, we exclude dates with special events when estimating these parameters.
+
+Here is an example fitting this model to Massachusetts weekly data from 2017 to 2020. We exclude the 2018 flu season and the 2020 COVID-19 pandemic.
+
+```{r, message=FALSE, warning=FALSE}
+library(dplyr)
+library(lubridate)
+exclude_dates <- c(seq(make_date(2017, 12, 16), make_date(2018, 1, 16), by = "day"),
+                   seq(make_date(2020, 1, 1), max(cdc_state_counts$date), by = "day"))
+```
+
+The `compute_expected` function returns another count data table but with expected counts included:
+```{r}
+counts <- cdc_state_counts %>% filter(state == "Massachusetts") %>%
+  compute_expected(exclude = exclude_dates, weekday.effect = FALSE)
+head(counts)
+```
+
+You can make a quick plot showing the expected and observed data using the `expected_plot` function:
+
+```{r}
+expected_plot(counts)
+```
+
+You can clearly see the effects of the COVID-19 epidemic.
+
+
+
+The dispersion parameter is saved as an attribute:
+
+```{r}
+attr(counts, "dispersion")
+```
+
+If you want to see the estimated trend and seasonal effects you can use the `keep.components` argument:
+
+
+```{r}
+res  <- cdc_state_counts %>% filter(state == "Massachusetts") %>%
+  compute_expected(exclude = exclude_dates, weekday.effect = FALSE,
+                   keep.components = TRUE)
+```
+
+
+Now you can explore the trend:
+
+```{r}
+qplot(res$counts$date, res$trend, geom = "line", 
+      xlab = "Date", ylab = "Death rate")
+```
+
+and the seasonal component:
+
+```{r}
+qplot(day, s, data = res$seasonal, geom = "line", 
+      xlab = "Day of the year", ylab = "Seconal effect")
+```
+
+# Computing event effects
+
+Once we have estimated $\mu(t)$ we can proceed to fit a model that accounts for natural disasters or outbreaks:
+
+$$
+Y_t \mid \varepsilon_t \sim 
+    \mbox{Poisson}\left\{ \mu_t \right[1 + f(t) \left]  \varepsilon_t \right\} \mbox{ for } t = 1, \dots,T
+$$
+
+with $T$ the total number of observations, $\mu_t$ the expected number of deaths at time $t$ for a typical year, $100 \times f(t)$ the percent increase at time $t$  due to an unusual event, and $\varepsilon_t$ a time series of, possibly auto-correlated, random variables representing natural variability. 
+
+The function `excess_model` fits this. We can supply the output `compute_expected`
+or we can start directly from the count table and the expected counts will be computed:
+
+```{r}
+fit <- cdc_state_counts %>% filter(state == "Massachusetts") %>%
+  excess_model(exclude = exclude_dates,
+               start = min(.$date),
+               end = max(.$date),
+               knots.per.year = 12,
+               weekday.effect = FALSE,
+               verbose = FALSE)
+```
+
+The `start` and `end` arguments determine what dates the model is fit to.
+
+We can quickly see the results using
+
+```{r}
+excess_plot(fit)
+```
+
+The function returns dates in which a above normal rate was estimated:
+
+```{r}
+fit$detected_intervals
+```
+
+We can also compute cumulative deaths from this fit
+
+```{r}
+cumu <- excess_cumulative(fit, 
+                          start = make_date(2020, 3, 1),
+                          end = make_date(2020, 5, 2))
+cumu %>%
+  ggplot(aes(date)) +
+  geom_ribbon(aes(ymin = observed- 2*sd, ymax = observed + 2*sd), alpha = 0.5) +
+  geom_point(aes(y = observed)) 
+
+```
+
+We can also use this function to obtain excess deaths for specific intervals by supplying `intervals` instead of `start` and `end`
+
+```{r}
+intervals <- list(flu = seq(make_date(2017, 12, 16), make_date(2018, 2, 10), by = "day"),
+                  covid19 = seq(make_date(2020, 3, 14), max(cdc_state_counts$date), by = "day"))
+cdc_state_counts %>% filter(state == "Massachusetts") %>%
+  excess_model(exclude = exclude_dates,
+               interval = intervals,
+               weekday.effect = FALSE,
+               verbose = FALSE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -13,7 +13,8 @@ Imports: stats,
     lubridate,
     splines,
     ggplot2
-Suggests: tidycensus
+Suggests: tidycensus, knitr, rmarkdown, dslabs
+VignetteBuilder: knitr
 Description: Functions for estimating excess mortality and other health related outcomes from daily count data. 
 License: Artistic-2.0
 Encoding: UTF-8

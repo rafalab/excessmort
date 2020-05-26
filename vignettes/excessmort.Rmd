@@ -130,6 +130,7 @@ exclude_dates <- c(seq(make_date(2017, 12, 16), make_date(2018, 1, 16), by = "da
 The `compute_expected` function returns another count data table but with expected counts as a new column along with a column that tells us if the date was excluded in the estimation procedure:
 
 ```{r}
+data("cdc_state_counts")
 counts <- cdc_state_counts %>% filter(state == "Massachusetts") %>%
   compute_expected(exclude = exclude_dates, weekday.effect = FALSE)
 head(counts)

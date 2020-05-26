@@ -44,6 +44,7 @@ exclude_dates <- c(seq(make_date(2017, 12, 16), make_date(2018, 1, 16), by = "da
                    seq(make_date(2020, 1, 1), max(cdc_state_counts$date), by = "day"))
 
 ## -----------------------------------------------------------------------------
+data("cdc_state_counts")
 counts <- cdc_state_counts %>% filter(state == "Massachusetts") %>%
   compute_expected(exclude = exclude_dates, weekday.effect = FALSE)
 head(counts)

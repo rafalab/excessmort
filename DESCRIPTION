@@ -1,7 +1,7 @@
 Package: excessmort
 Type: Package
 Title: Estimate excess deaths from daily count data
-Version: 0.1.0
+Version: 0.2.0
 Author: Rafael A. Irizarry, Rolando Acosta
 Maintainer: Rafael A. Irizarry <rafael_irizarry@dfci.harvard.edu>
 Depends: R (>= 3.5.0),

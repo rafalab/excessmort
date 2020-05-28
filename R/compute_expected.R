@@ -28,10 +28,10 @@
 #'
 compute_expected <- function(counts,
                              exclude = NULL,
-                             trend.knots.per.year = 1/5,
+                             trend.knots.per.year = 1/7,
                              harmonics = 2,
                              frequency = NULL,
-                             weekday.effect = TRUE,
+                             weekday.effect = FALSE,
                              keep.components = FALSE,
                              verbose = TRUE){
 

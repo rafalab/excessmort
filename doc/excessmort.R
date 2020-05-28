@@ -24,13 +24,13 @@ kable(head(counts))
 
 ## -----------------------------------------------------------------------------
 counts <- compute_counts(cook_records, by = "agegroup", demo = cook_demographics, 
-                         breaks = c(0,20,40,60,80,Inf))
+                         breaks = c(0, 20, 40, 60, 80, Inf))
 kable(head(counts))
 
 ## -----------------------------------------------------------------------------
 counts <- compute_counts(cook_records, by = c("agegroup", "race", "sex"), 
                          demo = cook_demographics, 
-                         breaks = c(0,20,40,60,80,Inf))
+                         breaks = c(0, 20, 40, 60, 80, Inf))
 kable(head(counts))
 
 ## ---- message=FALSE, warning=FALSE--------------------------------------------
@@ -73,7 +73,6 @@ fit <- cdc_state_counts %>%
                start          = min(.$date),
                end            = max(.$date),
                knots.per.year = 12,
-               weekday.effect = FALSE,
                verbose        = FALSE)
 
 ## -----------------------------------------------------------------------------
@@ -100,6 +99,5 @@ cdc_state_counts %>%
   filter(state == "Massachusetts") %>%
   excess_model(exclude        = exclude_dates,
                interval       = intervals,
-               weekday.effect = FALSE,
                verbose        = FALSE)
 

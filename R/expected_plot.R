@@ -46,7 +46,7 @@ expected_plot <- function(expected, title = "",
                          observed = outcome,
                          expected = expected)) %>%
     filter(date >= start & date <= end)
-  if(weekly){
+  if(weekly & attr(expected, "frequency") == 365){
     dat <- dat %>%
       mutate(date = lubridate::floor_date(date, unit = "week")) %>%
       group_by(date) %>%

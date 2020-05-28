@@ -180,7 +180,6 @@ fit <- cdc_state_counts %>%
                start          = min(.$date),
                end            = max(.$date),
                knots.per.year = 12,
-               weekday.effect = FALSE,
                verbose        = FALSE)
 ```
 
@@ -221,7 +220,6 @@ cdc_state_counts %>%
   filter(state == "Massachusetts") %>%
   excess_model(exclude        = exclude_dates,
                interval       = intervals,
-               weekday.effect = FALSE,
                verbose        = FALSE)
 ```
 

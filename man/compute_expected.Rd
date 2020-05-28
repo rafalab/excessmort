@@ -43,7 +43,7 @@ used in the estimation procedure.
 \examples{
 data(florida_counts)
 exclude_dates <- as.Date("2017-09-10") + 0:180
-counts <- compute_expected(florida_counts, exclude = exclude_dates)
+counts <- compute_expected(florida_counts, exclude = exclude_dates, weekday.effect = TRUE)
 library(ggplot2)
 expected_plot(counts)
 

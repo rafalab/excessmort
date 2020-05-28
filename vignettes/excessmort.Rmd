@@ -14,16 +14,16 @@ knitr::opts_chunk$set(echo = TRUE)
 options(digits = 3)
 ```
 
-This document is an introduction to the excessmort package for analyzing time series count data. The packages was designed to help estimate excess mortality from daily death count data, but can be applied to weekly and monthly data and outcomes other than death.
+This document is an introduction to the excessmort package for analyzing time series count data. The packages was designed to help estimate excess mortality from weekly or daily death count data, but can be applied to outcomes other than death.
 
 # Data types
 
 There are two main data types that the package works with:
 
 * records - Each row represents a death and includes individual level information. 
-* count tables - Each row represents a date and includes a count and population size.
+* count tables - Each row represents a date and includes a count and population size. These can be weekly or daily.
 
-If you start with record-level data, it is useful to also have a data frame with population sizes for groups of interest. We expect a population size estimate for each date.
+If you start with record-level data, it is useful to also have a data frame with population sizes for groups of interest. The pacakge functions expect a population size estimate for each date.
 
 ## Record-level data
 
@@ -32,6 +32,7 @@ As an example of record-level data we include the `cook-records` dataset.
 ```{r message=FALSE, warning=FALSE}
 library(knitr)
 library(dplyr)
+library(lubridate)
 library(ggplot2)
 library(excessmort)
 
@@ -59,7 +60,7 @@ counts <- compute_counts(cook_records, demo = cook_demographics)
 kable(head(counts))
 ```
 
-Note that the table provided to the `demo` argument must have population size for each date of interest. The function `approx_demographics` can interpolate yearly data into daily data. The function `get_demographics` can help you get data directly from Census. But a Census API key is required.  You can obtain one at http://api.census.gov/data/key_signup.html, and then supply the key to the `census_api_key` function to use it throughout your tidycensus session.
+Note that the table provided to the `demo` argument must have population size for each date of interest. The function `approx_demographics` can interpolate yearly data into daily data. The function `get_demographics` can help you get data directly from the Census. But it uses the tidycensus package which requires a Census API.  You can obtain one at http://api.census.gov/data/key_signup.html, and then supply the key to the `census_api_key` function to use it throughout your tidycensus session.
 
 The `compute_counts` has a special argument to define agegroups which you can use like this:
 
@@ -69,7 +70,9 @@ counts <- compute_counts(cook_records, by = "agegroup", demo = cook_demographics
 kable(head(counts))
 ```
 
-The breaks need to be a subset of the breaks used in the demographic data frame. You can also obtain counts for different demographics as long as they are included in the records-level data. A population size will be provided as long as the demographic variables match.
+The breaks need to be a subset of the breaks used in the demographic data frame. The most commonly used breaks in demographic recordsare $0, 5, 10, 15, \dots, 85, \infty$. 
+
+You can also obtain counts for different demographics as long as they are included in the records-level data. A population size will be provided as long as the demographic variables match.
 
 ```{r}
 counts <- compute_counts(cook_records, by = c("agegroup", "race", "sex"), 
@@ -102,16 +105,13 @@ A first step in most analyses is to estimate the expected count. The `compute_ex
 \begin{equation}
     \mu_t = N_t \exp[\alpha(t) + s(t) + w(t)]
 \end{equation}
-with $N_t$ the population at time $t$, $\alpha(t)$ a slow trend to account for the increase in life expectancy we have seen in the last few decades, a seasonal trend $s(t)$ to account for more deaths during the winter, and a day of the week effect $w(t)$.
+with $N_t$ the population at time $t$, $\alpha(t)$ a slow trend to account for the increase in life expectancy we have seen in the last few decades, a seasonal trend $s(t)$ to account for more deaths during the winter, and a day of the week effect $w(t)$. Note that for weekly data we do not need to include $w(t)$.
 
 Because we are often fitting this model to estimate the effect of a natural disaster or outbreak, we exclude dates with special events when estimating these parameters.
 
 As an example, here we fit this model to Massachusetts weekly data from 2017 to 2020. We exclude the 2018 flu season and the 2020 COVID-19 pandemic.
 
 ```{r, message=FALSE, warning=FALSE}
-library(dplyr)
-library(lubridate)
-
 exclude_dates <- c(seq(make_date(2017, 12, 16), make_date(2018, 1, 16), by = "day"),
                    seq(make_date(2020, 1, 1), max(cdc_state_counts$date), by = "day"))
 ```
@@ -121,7 +121,7 @@ The `compute_expected` function returns another count data table but with expect
 ```{r}
 counts <- cdc_state_counts %>% 
   filter(state == "Massachusetts") %>%
-  compute_expected(exclude = exclude_dates, weekday.effect = FALSE)
+  compute_expected(exclude = exclude_dates)
 
 kable(head(counts))
 ```
@@ -142,7 +142,7 @@ If you want to see the estimated trend and seasonal effects you can use the `kee
 
 ```{r}
 res  <- cdc_state_counts %>% filter(state == "Massachusetts") %>%
-  compute_expected(exclude = exclude_dates, weekday.effect = FALSE,
+  compute_expected(exclude = exclude_dates,
                    keep.components = TRUE)
 ```
 
@@ -176,11 +176,11 @@ The function `excess_model` fits this. We can supply the output `compute_expecte
 ```{r}
 fit <- cdc_state_counts %>% 
   filter(state == "Massachusetts") %>%
-  excess_model(exclude        = exclude_dates,
-               start          = min(.$date),
-               end            = max(.$date),
+  excess_model(exclude = exclude_dates,
+               start = min(.$date),
+               end = max(.$date),
                knots.per.year = 12,
-               verbose        = FALSE)
+               verbose = FALSE)
 ```
 
 The `start` and `end` arguments determine what dates the model is fit to.
@@ -213,7 +213,7 @@ cumulative_deaths %>%
 We can also use this function to obtain excess deaths for specific intervals by supplying `intervals` instead of `start` and `end`
 
 ```{r}
-intervals <- list(flu     = seq(make_date(2017, 12, 16), make_date(2018, 2, 10), by = "day"),
+intervals <- list(flu = seq(make_date(2017, 12, 16), make_date(2018, 2, 10), by = "day"),
                   covid19 = seq(make_date(2020, 03, 14), max(cdc_state_counts$date), by = "day"))
 
 cdc_state_counts %>% 
@@ -223,4 +223,131 @@ cdc_state_counts %>%
                verbose        = FALSE)
 ```
 
+# Daily data
 
+With daily data we recommend using a model that accounts for correlated data. You can do this by setting the `model` argument to `"correlated"`. We recommend exploring the data to see if a day of the week effect is needed and if it is included with the argument `weekday.effect = TRUE`.
+
+To fit this model we need a contiguous interval of dates with $f=0$ to estimate the correlation structure. This interval should not be too big (default limit is 5,000 data points) as it will slow down the estimation procedure.
+
+We demonstrate this with data from Puerto Rico. These data are provided for each age group:
+
+```{r}
+data("puerto_rico_counts")
+head(puerto_rico_counts)
+```
+
+We start by collapsing the dataset into bigger agegroups using the `collapse_counts_by_age` functions:
+
+```{r}
+counts <- collapse_counts_by_age(puerto_rico_counts,
+                                 breaks = c(0, 5, 20, 40, 60, 75, Inf))
+```
+
+In this example we will only use the oldest agegroup:
+
+```{r}
+counts <- filter(counts, agegroup == "75-Inf")
+```
+
+To fit the model we will exclude several dates due to hurricanes, dubious looking data, and the Chikungunya epidemic:
+
+```{r}
+hurricane_dates        <- as.Date(c("1989-09-18","1998-09-21","2017-09-20"))
+hurricane_effect_ends  <- as.Date(c("1990-03-18","1999-03-21","2018-03-20"))
+names(hurricane_dates) <- c("Hugo", "Georges", "Maria")
+exclude_dates <- c(seq(hurricane_dates[1], hurricane_effect_ends[1], by = "day"),
+                   seq(hurricane_dates[2], hurricane_effect_ends[2], by = "day"),
+                   seq(hurricane_dates[3], hurricane_effect_ends[3], by = "day"),
+                   seq(as.Date("2014-09-01"), as.Date("2015-03-21"), by = "day"),
+                   seq(as.Date("2001-01-01"), as.Date("2001-01-15"), by = "day"),
+                   seq(as.Date("2020-01-01"), lubridate::today(), by = "day"))
+```
+
+
+We pick the following dates to estimate the correlation function:
+
+```{r}
+control_dates <- seq(as.Date("2002-01-01"), as.Date("2013-12-31"), by = "day")
+```
+
+
+We are now ready to fit the model. We do this for 4 intervals of interest:
+
+```{r}
+interval_start <- c(hurricane_dates[2],
+                  hurricane_dates[3],
+                  Chikungunya = make_date(2014, 8, 1),
+                  Covid_19 = make_date(2020, 1, 1))
+before <-c(365, 365, 365, 548) ##days before event to include
+after <-c(365, 365, 365, 90) # days after event to incldue
+```
+
+For this model we can include a discontinuity which we do for the hurricanes:
+
+```{r}
+disc <- c(TRUE, TRUE, FALSE, FALSE)
+```
+
+We can fit the model to these 4 intervals as follows:
+
+```{r}
+f <- lapply(seq_along(interval_start), function(i){
+  excess_model(counts,
+               event = interval_start[i],
+               start = interval_start[i] - before[i],
+               end = interval_start[i] + after[i],
+               exclude = exclude_dates,
+               weekday.effect = TRUE,
+               control.dates = control_dates,
+               knots.per.year = 12,
+               discontinuity = disc[i],
+               model = "correlated")
+})
+```
+
+We can examine the different hurricane effects.
+
+This is Georges:
+
+```{r}
+excess_plot(f[[1]], title = names(interval_start)[1])
+```
+
+This is María:
+
+```{r}
+excess_plot(f[[2]],  title = names(interval_start)[2])
+```
+
+Chikungunya:
+
+```{r}
+excess_plot(f[[3]],  title = names(interval_start)[3])
+```
+
+And COVID-19
+
+```{r}
+excess_plot(f[[4]],  title = names(interval_start)[4])
+```
+
+We can compare cumulative deaths like this:
+
+```{r}
+ndays <- 365 ## days after event to include
+cumu <- lapply(seq_along(interval_start), function(i){
+      excess_cumulative(f[[i]],
+                      start = interval_start[i],
+                      end = pmin(make_date(2020, 3, 31), interval_start[i] + ndays)) %>%
+      mutate(event_day = interval_start[i], event = names(interval_start)[i])
+})
+cumu <- do.call(rbind, cumu)
+
+cumu %>%
+  mutate(day = as.numeric(date - event_day)) %>%
+  ggplot(aes(color = event, fill = event)) +
+  geom_ribbon(aes(day, ymin = fitted - 2*se, ymax = fitted + 2*se), alpha = 0.25) +
+  geom_point(aes(day, observed), alpha = 0.25, cex = 1) +
+  geom_line(aes(day, fitted)) +
+  ggtitle("Cumulative Excess Mortality")
+```

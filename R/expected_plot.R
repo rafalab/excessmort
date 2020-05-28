@@ -13,8 +13,7 @@
 #' @examples
 #' data(florida_counts)
 #' exclude_dates <- as.Date("2017-09-10") + 0:180
-#' e <- compute_expected(florida_counts, 
-#' exclude = exclude_dates)
+#' e <- compute_expected(florida_counts, exclude = exclude_dates, weekday.effect = TRUE)
 #' 
 #' library(ggplot2)
 #' expected_plot(e,
@@ -36,6 +35,8 @@ expected_plot <- function(expected, title = "",
                           color = "#3366FF",
                           alpha = 1){
 
+  if(!"compute_expected" %in% class(expected)) stop("The expected argument needs to be the output of the computed_expected function.")
+  if(!attr(expected, "frequency") %in% c(365, 52)) warning("This function assumes weekly or daily data. This dataset has ", attr(expected, "frequency"), "counts per year.")
   requireNamespace("ggplot2")
 
   if(is.null(start)) start <- min(expected$date)
@@ -46,16 +47,17 @@ expected_plot <- function(expected, title = "",
                          observed = outcome,
                          expected = expected)) %>%
     filter(date >= start & date <= end)
-  if(weekly & attr(expected, "frequency") == 365){
+  if(weekly){
     dat <- dat %>%
       mutate(date = lubridate::floor_date(date, unit = "week")) %>%
       group_by(date) %>%
-      summarize(expected = mean(expected)*7,
-                observed = mean(observed)*7) %>%
+      summarize(expected = sum(expected),
+                observed = sum(observed),
+                n = n()) %>%
       ungroup()
+    if(attr(expected, "frequency") == 365) dat <- filter(dat, n == 7) 
   }
-
-
+  
   yl <- "Counts"
   if(weekly) yl <- paste("Weekly", yl)
   p <- dat %>%

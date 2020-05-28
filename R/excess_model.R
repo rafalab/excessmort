@@ -8,7 +8,8 @@
 #' 
 #' Three versions of the model are available: 1 - Assume counts are Poisson distributed, 
 #' 2 - assume counts are overdispersed Poisson, or 3 - assume a mixed model with 
-#' correlated errors. The second is the default, but we often find evidence of correlation.
+#' correlated errors. The second is the default and recommended for weekly count data. For daily counts we often find 
+#' evidence of correlation and recommend the third along with setting `weekday.effect = TRUE`.
 #' 
 #' If the `counts` object includes a `expected` column produced by `compute_expected` these are used
 #' as the expected counts. If not, then these are computed.
@@ -56,13 +57,27 @@
 #' \item{excess}{A data frame with information for the time intervals provided in `itervals`. This includes start, end, observed death rate (per 1,000 per year), expected death rate, standard deviation for the death rate, observed counts, expected counts, excess counts, standard deviation}
 #' }
 #' 
-#' #' @examples
+#' @examples
+#' data(cdc_state_counts)
+#' counts <- cdc_state_counts[cdc_state_counts$state == "Massachusetts", ]
+#' exclude_dates <- c(seq(as.Date("2017-12-16"), as.Date("2018-01-16"), by = "day"),
+#' seq(as.Date("2020-01-01"), max(cdc_state_counts$date), by = "day"))
+#' f <- excess_model(counts, 
+#' exclude = exclude_dates,
+#' start = min(counts$date),
+#' end = max(counts$date),
+#' knots.per.year = 12)
+
 #' data(florida_counts)
 #' exclude_dates <- as.Date("2017-09-10") + 0:180
-#' f <- excess_model(florida_counts, 
+#' control_dates <- seq(min(florida_counts$date), min(exclude_dates) - 1, by = "day")
+#' f <- excess_model(florida_counts,
 #' start = as.Date("2017-9-1"), 
 #' end = as.Date("2018-9-1"), 
-#' exclude = exclude_dates)
+#' exclude = exclude_dates,
+#' model = "correlated",
+#' weekday.effect = TRUE,
+#' control.dates = control_dates)
 #' 
 #' @export
 #' @importFrom stats ARMAacf glm poly qnorm

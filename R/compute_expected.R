@@ -19,7 +19,7 @@
 #' @examples
 #' data(florida_counts)
 #' exclude_dates <- as.Date("2017-09-10") + 0:180
-#' counts <- compute_expected(florida_counts, exclude = exclude_dates)
+#' counts <- compute_expected(florida_counts, exclude = exclude_dates, weekday.effect = TRUE)
 #' library(ggplot2)
 #' expected_plot(counts)
 #' 
@@ -55,7 +55,7 @@ compute_expected <- function(counts,
     warning("No dates excluded. We recommend excluding at least the dates surrounding the event of interest.")
   }
 
-  if(!identical(counts, arrange(counts,date))) stop("counts must be ordered by date.")
+  if(!identical(counts$date, arrange(counts,date)$date)) stop("counts must be ordered by date.")
 
   ## helper function
   fourier_trend <- function(x, k = 3){

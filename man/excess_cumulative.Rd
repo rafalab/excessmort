@@ -28,12 +28,17 @@ This function takes the output of the `excess_model` function, a start date, and
 end date and calculates excess mortality and standard errors.
 }
 \examples{
-data(florida_counts)
+#' data(florida_counts)
 exclude_dates <- as.Date("2017-09-10") + 0:180
-f <- excess_model(florida_counts, 
+control_dates <- seq(min(florida_counts$date), min(exclude_dates) - 1, by = "day")
+f <- excess_model(florida_counts,
 start = as.Date("2017-9-1"), 
 end = as.Date("2018-9-1"), 
-exclude = exclude_dates)
+exclude = exclude_dates,
+model = "correlated",
+weekday.effect = TRUE,
+control.dates = control_dates)
+
 excess_cumulative(f, 
 start = as.Date("2017-12-15"), 
 end = as.Date("2017-12-21") )

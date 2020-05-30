@@ -1,7 +1,7 @@
 #' Weekly death counts for each USA state
 #'
 #' The Center for Disease Control (CDC) provides weekly estimated death counts for each state in the USA. 
-#' This data frame includes thes estimates for each state along with population sizes.
+#' This data frame includes these estimates for each state along with population sizes.
 #'  
 #'  \itemize{
 #'  \item state Name of USA state
@@ -13,6 +13,6 @@
 #' 
 #' @format An object of class \code{"data.frame"}
 #' 
-#' #' @docType data
+#' @docType data
 
 "cdc_state_counts"

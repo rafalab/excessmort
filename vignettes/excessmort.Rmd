@@ -202,7 +202,7 @@ We can also compute cumulative deaths from this fit:
 ```{r}
 cumulative_deaths  <- excess_cumulative(fit, 
                                         start = make_date(2020, 03, 01),
-                                        end   = make_date(2020, 05, 02))
+                                        end   = make_date(2020, 05, 09))
 cumulative_deaths %>%
   ggplot(aes(date)) +
   geom_ribbon(aes(ymin = observed- 2*sd, ymax = observed + 2*sd), alpha = 0.5) +

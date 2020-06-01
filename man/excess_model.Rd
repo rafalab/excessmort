@@ -25,7 +25,7 @@ excess_model(
   maxit = 25,
   epsilon = 1e-08,
   alpha = 0.05,
-  min.rate = 0.01,
+  min.rate = 1e-04,
   verbose = TRUE
 )
 }

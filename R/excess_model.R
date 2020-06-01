@@ -101,7 +101,7 @@ excess_model <- function(counts,
                          maxit = 25,
                          epsilon = 1e-8,
                          alpha = 0.05,
-                         min.rate = 0.01,
+                         min.rate = 0.0001,
                          verbose = TRUE){
 
   if("compute_expected" %in% class(counts)){
@@ -116,7 +116,8 @@ excess_model <- function(counts,
                                 harmonics = harmonics,
                                 frequency = frequency,
                                 weekday.effect = weekday.effect,
-                                keep.components = FALSE)
+                                keep.components = FALSE,
+                                verbose = verbose)
   }
 
   correlated.errors <- match.arg(model) == "correlated"
@@ -181,7 +182,9 @@ excess_model <- function(counts,
     date <- counts$date[ind]
     n <- length(ind)
     x <- 0:(n-1) / frequency * 365
-    mu <- counts$expected[ind]
+    mu <- pmax(min.rate, counts$expected[ind])
+    if(any(mu == min.rate)) warning("Minimum expected rate reached and was set at ", min.rate, ".")
+    min.fhat <- min.rate / mu - 1
     obs <- counts$outcome[ind]
     pop <- counts$population[ind]
 
@@ -235,7 +238,7 @@ excess_model <- function(counts,
         xwxi <- mysolve(t(X) %*% Sigma_inv %*% X)
         beta <- xwxi %*% t(X) %*% Sigma_inv %*% y
         count <- count + 1
-        fhat <- pmax(as.vector(X %*% beta), min.rate - 1)
+        fhat <- pmax(as.vector(X %*% beta), min.fhat)
         devold <- dev
         dev <- 2*sum(ifelse(obs == 0, 0, obs * log(obs / (mu*(1 + fhat)))) - (obs - mu*(1 + fhat)))
         flag <- abs(dev - devold)/(0.1 + abs(dev)) >= epsilon
@@ -248,12 +251,15 @@ excess_model <- function(counts,
     } else{
       fit <- glm(obs ~ X-1, offset = log(mu), family = "poisson")
       tmp<- predict(fit, se = TRUE, type = "response")
-      fhat <- tmp$fit/mu - 1
+      fhat <- pmax(min.fhat, min.fhat)
       se <- tmp$se * sqrt(dispersion) / mu
       Sigma <- diag(n) *  dispersion / mu
       betacov <- summary(fit)$cov.unscaled * dispersion
     }
 
+    ## Warning if minimum reached
+    if(any(fhat == min.fhat)) warning("Minimum rate reached and was set so that estimated rate is ", min.rate, ".")
+    
     ## Compute regions for which estimate was outside usual range
 
     excess_ind <- which(fhat - qnorm(1 - alpha/2) * se >= 0)

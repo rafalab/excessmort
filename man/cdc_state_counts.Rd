@@ -6,8 +6,6 @@
 \title{Weekly death counts for each USA state}
 \format{
 An object of class \code{"data.frame"}
-
-#' @docType data
 }
 \usage{
 data(cdc_state_counts)

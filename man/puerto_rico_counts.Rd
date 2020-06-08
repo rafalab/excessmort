@@ -5,14 +5,14 @@
 \alias{puerto_rico_counts}
 \title{Puerto Rico daily mortality}
 \format{
-An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 271404 rows and 4 columns.
+An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 271551 rows and 4 columns.
 }
 \usage{
 data("puerto_rico_counts")
 }
 \description{
 A data frame with Puerto Rico daily mortality counts, stratified by agegroup,
-from 1985-01-01 to 2020-05-22
+from 1985 to 2020.
 which includes the days hurricanes Hugo, Georges, and Maria made
 landfall on 1989-09-18, 1998-09-21, and 2017-09-20, respectively.
 The outcome column includes the number of deaths for that day.

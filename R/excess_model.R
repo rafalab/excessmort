@@ -250,8 +250,8 @@ excess_model <- function(counts,
 
     } else{
       fit <- glm(obs ~ X-1, offset = log(mu), family = "poisson")
-      tmp<- predict(fit, se = TRUE, type = "response")
-      fhat <- pmax(min.fhat, min.fhat)
+      tmp <- predict(fit, se = TRUE, type = "response")
+      fhat <- pmax(tmp$fit/mu - 1, min.fhat)
       se <- tmp$se * sqrt(dispersion) / mu
       Sigma <- diag(n) *  dispersion / mu
       betacov <- summary(fit)$cov.unscaled * dispersion

@@ -129,7 +129,7 @@ compute_expected <- function(counts,
 
   counts <- mutate(counts, expected = as.numeric(expected), excluded = !index)
   attr(counts, "dispersion") <- dispersion
-  attr(counts, "trend.knots.per.year") <- 1/5
+  attr(counts, "trend.knots.per.year") <- trend.knots.per.year
   attr(counts, "knots") <- knots
   attr(counts, "harmonics") <- harmonics
   attr(counts, "frequency") <- frequency

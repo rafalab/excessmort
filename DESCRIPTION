@@ -1,7 +1,7 @@
 Package: excessmort
 Type: Package
 Title: Excess mortality
-Version: 0.4.2
+Version: 0.4.3
 Author: Rafael A. Irizarry, Rolando Acosta
 Maintainer: Rafael A. Irizarry <rafael_irizarry@dfci.harvard.edu>
 Depends: R (>= 3.5.0),

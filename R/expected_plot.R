@@ -27,13 +27,14 @@
 #' @importFrom ggplot2 ggplot geom_ribbon ylab xlab geom_point coord_cartesian geom_line
 
 
-expected_plot <- function(expected, title = "",
-                          start = NULL,
-                          end = NULL,
-                          ylim = NULL,
+expected_plot <- function(expected, 
+                          title  = "",
+                          start  = NULL,
+                          end    = NULL,
+                          ylim   = NULL,
                           weekly = TRUE,
-                          color = "#3366FF",
-                          alpha = 1){
+                          color  = "#3366FF",
+                          alpha=0.50){
 
   if(!"compute_expected" %in% class(expected)) stop("The expected argument needs to be the output of the computed_expected function.")
   if(!attr(expected, "frequency") %in% c(365, 52)) warning("This function assumes weekly or daily data. This dataset has ", attr(expected, "frequency"), "counts per year.")
@@ -63,10 +64,13 @@ expected_plot <- function(expected, title = "",
   p <- dat %>%
     ggplot(aes(x = date)) +
     geom_point(aes(y = observed), alpha = alpha) +
-    geom_line(aes(y = expected), color = color) +
+    geom_line(aes(y = expected), size=0.70, color = color) +
     ylab(yl) +
+    scale_y_continuous(labels = scales::comma) +
+    scale_x_date(date_labels = "%b %Y") +
     ggtitle(title) +
-    xlab("Date")
+    xlab("Date") +
+    theme_bw()
 
   if(!is.null(ylim)) p <- p + coord_cartesian(ylim = ylim)
 

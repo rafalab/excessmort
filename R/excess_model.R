@@ -225,6 +225,7 @@ excess_model <- function(counts,
       ## start iterations
       count <- 0
       flag <- TRUE
+      log_mu_vari <- counts$log_expected_se[ind]^2
       while(count < maxit & flag){
         if(length(arfit$ar) > 0 & s > 0){
           Sigma <- apply(abs(outer(1:n, 1:n, "-")) + 1, 1, function(i) rhos[i]) * 

@@ -126,8 +126,11 @@ compute_expected <- function(counts,
 
   # prepare stuff to return
   expected <- exp(x %*% fit$coefficients) * n
+  cova            <- summary(fit)$cov.unscaled * dispersion
+  log_expected_se <- apply(X=x, MARGIN=1, function(xi){sqrt(t(xi) %*% cova %*% xi)})
+  counts          <- mutate(counts, log_expected_se = as.numeric(log_expected_se))
 
-  counts <- mutate(counts, expected = as.numeric(expected), excluded = !index)
+  counts <- mutate(counts, expected = as.numeric(expected), log_expected_se = as.numeric(log_expected_se), excluded = !index)
   attr(counts, "dispersion") <- dispersion
   attr(counts, "trend.knots.per.year") <- trend.knots.per.year
   attr(counts, "knots") <- knots

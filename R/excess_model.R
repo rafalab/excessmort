@@ -227,12 +227,12 @@ excess_model <- function(counts,
       flag <- TRUE
       while(count < maxit & flag){
         if(length(arfit$ar) > 0 & s > 0){
-          Sigma <- apply(abs(outer(1:n, 1:n, "-")) + 1, 1, function(i) rhos[i]) *
-            outer(sqrt((1+fhat)^2 * s^2 + (1+fhat)/mu), sqrt((1+fhat)^2 * s^2 + (1+fhat)/mu))
+          Sigma <- apply(abs(outer(1:n, 1:n, "-")) + 1, 1, function(i) rhos[i]) * 
+            outer(sqrt((1 + fhat)^2 * s^2 + (1 + fhat)/mu + log_mu_vari), sqrt((1 + fhat)^2 * s^2 + (1 + fhat)/mu + log_mu_vari))
           Sigma_inv <- mysolve(Sigma)
         } else{
-          Sigma <- diag((1 + fhat)^2 * s^2 + (1+fhat) / mu)
-          Sigma_inv <- diag(1 / ( (1 + fhat)^2 * s^2 + (1+fhat) / mu))
+          Sigma <- diag((1 + fhat)^2 * s^2 + (1 + fhat)/mu + log_mu_vari)
+          Sigma_inv <- diag(1/((1 + fhat)^2 * s^2 + (1 +  fhat)/mu + log_mu_vari))
         }
         ## fit spline using weighted least squares
         xwxi <- mysolve(t(X) %*% Sigma_inv %*% X)
@@ -252,7 +252,11 @@ excess_model <- function(counts,
       fit <- glm(obs ~ X-1, offset = log(mu), family = "poisson")
       tmp <- predict(fit, se = TRUE, type = "response")
       fhat <- pmax(tmp$fit/mu - 1, min.fhat)
-      se <- tmp$se * sqrt(dispersion) / mu
+      lambda <- fitted.values(fit)
+      cova <- summary(fit)$cov.unscaled * summary(fit)$dispersion
+      lambda_vari <- lambda^2 * diag(X %*% cova %*% t(X))
+      mu_vari <- counts$expected[ind]^2 * counts$log_expected_se[ind]^2
+      se <- sqrt((lambda_vari / mu^2) + (lambda^2 * mu_vari / mu^4))
       Sigma <- diag(n) *  dispersion / mu
       betacov <- summary(fit)$cov.unscaled * dispersion
     }
@@ -286,6 +290,7 @@ excess_model <- function(counts,
     ret <- list(date = date,
                 observed = obs,
                 expected = mu,
+                log_expected_se = counts$log_expected_se[ind],
                 fitted = fhat,
                 se = se,
                 population = pop,

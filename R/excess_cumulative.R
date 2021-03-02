@@ -47,7 +47,9 @@ excess_cumulative <- function(fit, start, end){
 
   fit_excess <- A %*% fhat
   obs_excess <- cumsum(fit$observed[ind] - fit$expected[ind])
-  fitted_se <- sqrt(diag(A %*% fit$x[ind,] %*% fit$betacov %*% t(A %*% fit$x[ind,])))
+  varcov <- fit$x[ind,] %*% fit$betacov %*% t(fit$x[ind,])
+  diag(varcov) <- fit$se[ind]^2
+  fitted_se <- sqrt(diag(A %*%  varcov %*% t(A)))
   sd <- sqrt(diag(A %*% fit$cov[ind, ind] %*% t(A)))
   data.frame(date = fit$date[ind],
              observed = obs_excess,

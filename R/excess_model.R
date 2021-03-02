@@ -258,8 +258,8 @@ excess_model <- function(counts,
       lambda_vari <- lambda^2 * diag(X %*% cova %*% t(X))
       mu_vari <- counts$expected[ind]^2 * counts$log_expected_se[ind]^2
       se <- sqrt((lambda_vari / mu^2) + (lambda^2 * mu_vari / mu^4))
-      Sigma <- diag(n) *  dispersion / mu
-      betacov <- summary(fit)$cov.unscaled * dispersion
+      Sigma <- diag(n) *  summary(fit)$dispersion / mu
+      betacov <- summary(fit)$cov.unscaled * summary(fit)$dispersion
     }
 
     ## Warning if minimum reached

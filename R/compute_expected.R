@@ -90,12 +90,22 @@ compute_expected <- function(counts,
 
   # compute knots
   years <- (max(tt) - min(tt)) / 365
-  nknots <- round(years*trend.knots.per.year) + 2
+  nknots <- floor(years*trend.knots.per.year) + 1
   knots <- seq(min(tt), max(tt), length = nknots)
-  knots <- knots[-c(1, length(knots))]
-
+    
   # make trend basis (includes intercept)
-  x_t <- splines::ns(tt, knots = knots, intercept = TRUE)
+  if(nknots > 2){
+    
+    knots <- knots[-c(1, length(knots))]
+    x_t <- splines::ns(tt, knots = knots, intercept = TRUE)
+    
+  } else{
+    
+    knots <- c()
+    x_t <- model.matrix(~tt)
+  }
+  
+  # trend indices 
   i_t <- 1:ncol(x_t)
 
   #for harmonic model

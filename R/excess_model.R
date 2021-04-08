@@ -229,11 +229,11 @@ excess_model <- function(counts,
       while(count < maxit & flag){
         if(length(arfit$ar) > 0 & s > 0){
           Sigma <- apply(abs(outer(1:n, 1:n, "-")) + 1, 1, function(i) rhos[i]) * 
-            outer(sqrt((1 + fhat)^2 * s^2 + (1 + fhat)/mu + log_mu_vari), sqrt((1 + fhat)^2 * s^2 + (1 + fhat)/mu + log_mu_vari))
+            outer(sqrt((1 + fhat)^2 * s^2 + (1 + fhat)/mu + (1 + fhat)^2 * log_mu_vari), sqrt((1 + fhat)^2 * s^2 + (1 + fhat)/mu + (1 + fhat)^2 * log_mu_vari))
           Sigma_inv <- mysolve(Sigma)
         } else{
-          Sigma <- diag((1 + fhat)^2 * s^2 + (1 + fhat)/mu + log_mu_vari)
-          Sigma_inv <- diag(1/((1 + fhat)^2 * s^2 + (1 +  fhat)/mu + log_mu_vari))
+          Sigma <- diag((1 + fhat)^2 * s^2 + (1 + fhat)/mu + (1 + fhat)^2 * log_mu_vari)
+          Sigma_inv <- diag(1/((1 + fhat)^2 * s^2 + (1 +  fhat)/mu + (1 + fhat)^2 * log_mu_vari))
         }
         ## fit spline using weighted least squares
         xwxi <- mysolve(t(X) %*% Sigma_inv %*% X)

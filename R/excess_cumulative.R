@@ -37,23 +37,23 @@ excess_cumulative <- function(fit, start, end){
   if(!"curve_fit" %in% attr(fit, "type"))
     stop("This is not the correct excess_model fit, needs curve fit.")
 
-  ind <- which(fit$date %in% seq(start, end, by = "day"))
-  n <- length(ind)
-  A <- matrix(1, n, n)
+  ind             <- which(fit$date %in% seq(start, end, by = "day"))
+  n               <- length(ind)
+  A               <- matrix(1, n, n)
   A[upper.tri(A)] <- 0
-  A <- sweep(A, 2, fit$expected[ind], FUN = "*")
+  A               <- sweep(A, 2, fit$expected[ind], FUN = "*")
 
   fhat <- matrix(fit$fitted[ind], ncol = 1)
 
-  fit_excess <- A %*% fhat
-  obs_excess <- cumsum(fit$observed[ind] - fit$expected[ind])
-  varcov <- fit$x[ind,] %*% fit$betacov %*% t(fit$x[ind,])
+  fit_excess   <- A %*% fhat
+  obs_excess   <- cumsum(fit$observed[ind] - fit$expected[ind])
+  varcov       <- fit$x[ind,] %*% fit$betacov %*% t(fit$x[ind,])
   diag(varcov) <- fit$se[ind]^2
-  fitted_se <- sqrt(diag(A %*%  varcov %*% t(A)))
-  sd <- sqrt(diag(A %*% fit$cov[ind, ind] %*% t(A)))
-  data.frame(date = fit$date[ind],
+  fitted_se    <- sqrt(diag(A %*%  varcov %*% t(A)))
+  sd           <- sqrt(diag(A %*% (fit$cov[ind,ind] + diag(fit$log_expected_se[ind]^2)) %*% t(A)))
+  data.frame(date     = fit$date[ind],
              observed = obs_excess,
-             sd = sd,
-             fitted = fit_excess,
-             se = fitted_se)
+             sd       = sd,
+             fitted   = fit_excess,
+             se       = fitted_se)
 }

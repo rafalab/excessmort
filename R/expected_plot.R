@@ -1,4 +1,4 @@
-#' Plot Expeceted Counts
+#' Plot Expected Counts
 #' 
 #' Check if expected counts fit data
 #' 

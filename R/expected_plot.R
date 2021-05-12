@@ -4,7 +4,7 @@
 #' 
 #' @param expected The output from `excess_counts`
 #' @param title A title to add to plot
-#' @param start First day ro show
+#' @param start First day to show
 #' @param end Last day to show
 #' @param ylim A vector with two numbers that determines the kimits for the y-axis
 #' @param weekly Logical that determines if data should be summarized into weekly counts

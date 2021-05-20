@@ -20,12 +20,13 @@ fit_ar <- function(counts, control.dates = NULL,
     control.dates <- counts$date
   }
 
-  date <- counts$date
-  ind <- which(date %in% control.dates)
-  mu <- counts$expected[ind]
-  y <- (counts$outcome[ind] - mu)/mu
+  date   <- counts$date
+  ind    <- which(date %in% control.dates)
+  mu     <- counts$expected[ind]
+  mu_var <- mu^2 * log_expected_se[ind]^2
+  y      <- (counts$outcome[ind] - mu)/mu
 
-  s2 <- pmax(0, mean(y^2 - 1/mu))
+  s2 <- pmax(0, mean(y^2 - 1/mu - mu_var))
   w <- 1 / sqrt(1/mu + s2)
 
   if(order.max > 0){

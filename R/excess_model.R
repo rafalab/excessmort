@@ -316,10 +316,11 @@ excess_model <- function(counts,
   ## The uncertainty is calculated under the null
   if(!is.null(intervals)){
     res <- lapply(intervals, function(dates){
-      ind <- which(counts$date %in% dates)
-      date <- counts$date[ind]
-      n <- length(ind)
-      mu <- counts$expected[ind]
+      ind         <- which(counts$date %in% dates)
+      date        <- counts$date[ind]
+      n           <- length(ind)
+      mu          <- counts$expected[ind]
+      log_mu_vari <- counts$log_expected_se[ind]^2
 
       if(correlated.errors){
         if(length(arfit$ar) > 0 & arfit$sigma > 0){
@@ -327,9 +328,9 @@ excess_model <- function(counts,
         }
         if(length(arfit$ar) > 0 & arfit$sigma > 0){
           Sigma <- apply(abs(outer(1:n, 1:n, "-")) + 1, 1, function(i) rhos[i]) *
-            outer(sqrt(s^2 + 1/mu), sqrt(s^2 + 1/mu))
+            outer(sqrt(s^2 + 1/mu + log_mu_vari), sqrt(s^2 + 1/mu + log_mu_vari))
         } else{
-          Sigma <- diag(s^2 + 1/mu)
+          Sigma <- diag(s^2 + 1/mu + log_mu_vari)
         }
       } else{
         Sigma <- diag(n) *  dispersion / mu

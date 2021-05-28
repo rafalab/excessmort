@@ -27,7 +27,7 @@ fit_ar <- function(counts, control.dates = NULL,
   y      <- (counts$outcome[ind] - mu)/mu
 
   s2 <- pmax(0, mean(y^2 - 1/mu - mu_var))
-  w <- 1 / sqrt(1/mu + s2)
+  w  <- 1 / sqrt(1/mu + s2 + mu_var)
 
   if(order.max > 0){
     arfit <- ar(y*w, aic = aic, order.max = order.max)

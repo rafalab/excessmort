@@ -18,7 +18,24 @@ globalVariables(
     "year",
     "value",
     "sex",
-    "race")
+    "race",
+    "excluded",
+    "yday",
+    "day",
+    "month",
+    "labs",
+    "avg_outcome",
+    "s",
+    "wday",
+    "effect",
+    "log_expected_se",
+    "lwr",
+    "upr",
+    "after_scale",
+    "expected_se",
+    "difference",
+    "week"
+  )
 )
     
     

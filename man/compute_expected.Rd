@@ -41,9 +41,9 @@ column. It also returns a logical column that is `TRUE` if that entry was
 used in the estimation procedure.
 }
 \examples{
-data(florida_counts)
-exclude_dates <- as.Date("2017-09-10") + 0:180
-counts <- compute_expected(florida_counts, exclude = exclude_dates, weekday.effect = TRUE)
+data(new_jersey_counts)
+exclude_dates <- as.Date("2012-10-29") + 0:180
+counts <- compute_expected(new_jersey_counts, exclude = exclude_dates, weekday.effect = TRUE)
 library(ggplot2)
 expected_plot(counts)
 

@@ -11,14 +11,12 @@
 #' @param color Color for the expected curve
 #' @param alpha alpha blending for points
 #' @examples
-#' data(florida_counts)
-#' exclude_dates <- as.Date("2017-09-10") + 0:180
-#' e <- compute_expected(florida_counts, exclude = exclude_dates, weekday.effect = TRUE)
+#' data(new_jersey_counts)
+#' exclude_dates <- as.Date("2012-10-29") + 0:180
+#' e <- compute_expected(new_jersey_counts, exclude = exclude_dates, weekday.effect = TRUE)
 #' 
 #' library(ggplot2)
-#' expected_plot(e,
-#' start = as.Date("2017-9-1"), 
-#' end = as.Date("2018-9-1"), )
+#' expected_plot(e, start = as.Date("2012-09-01"), end = as.Date("2013-09-01"))
 #' 
 
 #' @export

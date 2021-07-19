@@ -91,7 +91,6 @@ The package includes several examples of count-level data:
 |Dataset | Description|
 |---------|-----------------------|
 |cdc_state_counts     |      Weekly death counts for each USA state|
-|florida_counts        |     Florida daily mortality|
 |icd (puerto_rico_icd)  |    Puerto Rico daily mortality by cause of death|
 |louisiana_counts        |   Louisiana daily mortality|
 |new_jersey_counts        |  New Jersey daily mortality|

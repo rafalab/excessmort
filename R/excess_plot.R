@@ -6,12 +6,12 @@
 #' @param show.data A logical that determines if the observed percent changes are shown
 #' @param alpha  1 - `alpha` confidence intervals are shown
 #' @examples
-#' data(florida_counts)
-#' exclude_dates <- as.Date("2017-09-10") + 0:180
-#' control_dates <- seq(min(florida_counts$date), min(exclude_dates) - 1, by = "day")
-#' f <- excess_model(florida_counts,
-#' start = as.Date("2017-9-1"), 
-#' end = as.Date("2018-9-1"), 
+#' data(new_jersey_counts)
+#' exclude_dates <- as.Date("2012-10-29") + 0:180
+#' control_dates <- seq(min(new_jersey_counts$date), min(exclude_dates) - 1, by = "day")
+#' f <- excess_model(new_jersey_counts,
+#' start = as.Date("2012-09-01"), 
+#' end = as.Date("2013-09-01"), 
 #' exclude = exclude_dates,
 #' model = "correlated",
 #' weekday.effect = TRUE,
@@ -22,7 +22,7 @@
 #' 
 #' @export
 #' @importFrom stats qnorm
-#' @importFrom ggplot2 ggplot geom_hline ggtitle aes geom_ribbon ylab xlab geom_point coord_cartesian geom_line
+#' @importFrom ggplot2 ggplot geom_hline ggtitle aes geom_ribbon ylab xlab geom_point coord_cartesian geom_line scale_y_continuous scale_y_continuous scale_x_date theme_bw 
 #'
 
 excess_plot <- function(fit, 

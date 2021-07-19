@@ -8,12 +8,18 @@
 #' @param color Color for the expected curve
 #' @param alpha alpha blending for points
 #' @examples
-#' library(excessmort)
-#' library(tidyverse)
+#' 
+#' library(dplyr)
+#' library(lubridate)
+#' library(ggplot2)
+#' 
+#' flu_season <- seq(make_date(2017, 12, 16), make_date(2018, 1, 16), by = "day")
+#'
+#' exclude_dates <- c(flu_season, seq(make_date(2020, 1, 1), today(), by = "day"))
 #' 
 #' res  <- cdc_state_counts %>%
 #'  filter(state == "Massachusetts") %>%
-#'  compute_expected(exclude         = exclude_dates,
+#'  compute_expected(exclude = exclude_dates,
 #'                   keep.components = TRUE)
 #'                   
 #' expected_diagnostic(expected = res, alpha = 0.50)
@@ -21,8 +27,8 @@
 
 #' @export
 #' @import dplyr
-#' @importFrom stats qnorm
-#' @importFrom ggplot2 ggplot geom_ribbon ylab xlab geom_point coord_cartesian geom_line
+#' @importFrom stats qnorm sd
+#' @importFrom ggplot2 ggplot geom_ribbon ylab xlab geom_point coord_cartesian geom_line geom_errorbar
 
 expected_diagnostic <- function(expected, 
                                 start  = NULL,
@@ -110,7 +116,7 @@ expected_diagnostic <- function(expected,
       group_by(year) %>%
       summarize(outcome = mean(outcome)) %>%
       ungroup() %>%
-      mutate(date = make_date(year, 07, 01))
+      mutate(date = lubridate::make_date(year, 07, 01))
     
     # -- Long term trend viz
     p_trend <- ggplot() +
@@ -193,7 +199,7 @@ expected_diagnostic <- function(expected,
       geom_point(alpha = alpha) +
       geom_ribbon(aes(ymin = lwr,
                       ymax = upr),
-                  fill  = after_scale(colorspace::lighten(color, 0.5))) +
+                  fill  = color, alpha = 0.5) +
       geom_line(aes(date, expected), 
                 color = color,
                 size  = 0.80) +
@@ -213,7 +219,7 @@ expected_diagnostic <- function(expected,
       geom_point(alpha = alpha) +
       geom_ribbon(aes(ymin = lwr,
                       ymax = upr),
-                  fill  = after_scale(colorspace::lighten(color, 0.5))) +
+                  fill  = color, alpha = 0.5) +
       geom_line(aes(date, 0),
                 color = color,
                 size  = 0.80) +
@@ -273,7 +279,7 @@ expected_diagnostic <- function(expected,
       group_by(year) %>%
       summarize(outcome = mean(outcome)) %>%
       ungroup() %>%
-      mutate(date = make_date(year, 07, 01))
+      mutate(date = lubridate::make_date(year, 07, 01))
     
     # -- Long term trend viz
     p_trend <- ggplot() +
@@ -303,7 +309,7 @@ expected_diagnostic <- function(expected,
       geom_point(alpha = alpha) +
       geom_ribbon(aes(ymin = lwr,
                       ymax = upr),
-                  fill  = after_scale(colorspace::lighten(color, 0.5))) +
+                  fill  = color, alpha = 0.5) +
       geom_line(aes(date, expected), 
                 color = color,
                 size  = 0.80) +
@@ -323,7 +329,7 @@ expected_diagnostic <- function(expected,
       geom_point(alpha = alpha) +
       geom_ribbon(aes(ymin = lwr,
                       ymax = upr),
-                  fill  = after_scale(colorspace::lighten(color, 0.5))) +
+                  fill  = color, alpha = 0.5) +
       geom_line(aes(date, 0),
                 color = color,
                 size  = 0.80) +

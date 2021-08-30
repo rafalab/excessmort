@@ -250,8 +250,7 @@ cumulative_deaths %>%
             color = "white",
             size  = 1) +
   geom_line(aes(y = observed)) +
-  geom_point(aes(y = observed),
-             size = 2) +
+  geom_point(aes(y = observed)) +
   scale_y_continuous(labels = scales::comma) +
   labs(x        = "Date",
        y        = "Cumulative excess deaths",

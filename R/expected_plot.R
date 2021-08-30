@@ -24,18 +24,26 @@
 #' @importFrom stats qnorm
 #' @importFrom ggplot2 ggplot geom_ribbon ylab xlab geom_point coord_cartesian geom_line
 
-
 expected_plot <- function(expected, 
                           title  = "",
                           start  = NULL,
                           end    = NULL,
                           ylim   = NULL,
-                          weekly = TRUE,
+                          weekly = FALSE,
                           color  = "#3366FF",
                           alpha=0.50){
 
-  if(!"compute_expected" %in% class(expected)) stop("The expected argument needs to be the output of the computed_expected function.")
-  if(!attr(expected, "frequency") %in% c(365, 52)) warning("This function assumes weekly or daily data. This dataset has ", attr(expected, "frequency"), "counts per year.")
+  # -- Checking class compute_expected
+  if(!"compute_expected" %in% class(expected)) stop("The expected argument needs to be the output of the computed_expected function.")  
+  
+  # -- Checking frequency 
+  if(attr(expected, "keep.components")) { 
+    if(!attr(expected$counts, "frequency") %in% c(365, 52, 12)) warning("This function assumes monthly, weekly or daily data. This dataset has ", attr(expected$counts, "frequency"), "counts per year.") 
+    expected = expected$counts
+  } else {
+    if(!attr(expected, "frequency") %in% c(365, 52, 12)) warning("This function assumes monthly, weekly or daily data. This dataset has ", attr(expected$counts, "frequency"), "counts per year.")
+  }
+  
   requireNamespace("ggplot2")
 
   if(is.null(start)) start <- min(expected$date)

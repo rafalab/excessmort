@@ -10,7 +10,7 @@ expected_plot(
   start = NULL,
   end = NULL,
   ylim = NULL,
-  weekly = TRUE,
+  weekly = FALSE,
   color = "#3366FF",
   alpha = 0.5
 )

@@ -67,8 +67,7 @@ expected_plot <- function(expected,
     scale_y_continuous(labels = scales::comma) +
     scale_x_date(date_labels = "%b %Y") +
     ggtitle(title) +
-    xlab("Date") +
-    theme_bw()
+    xlab("Date")
 
   if(!is.null(ylim)) p <- p + coord_cartesian(ylim = ylim)
 

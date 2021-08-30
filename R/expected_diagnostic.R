@@ -43,7 +43,7 @@ expected_diagnostic <- function(expected,
   if(!"keep.components" %in% names(attributes(expected))) stop("The components were not found. Run the computed_expected function with keep.components = TRUE")
   
   # -- Check if the data frequency is daily or weekly
-  if(!attr(expected$counts, "frequency") %in% c(365, 52)) stop("This function assumes weekly or daily data. This dataset has ", attr(expected$counts, "frequency"), " counts per year.")
+  if(!attr(expected$counts, "frequency") %in% c(365, 52, 12)) stop("This function assumes monthly, weekly or daily data. This dataset has ", attr(expected$counts, "frequency"), " counts per year.")
   
   # -- We use ggplot for the figures
   requireNamespace("ggplot2")
@@ -228,7 +228,7 @@ expected_diagnostic <- function(expected,
            y = "Observed - expected",
            title = "Residual Plot")
     
-  } else {
+  } else if(attr(expected$counts, "frequency") %in% 52) {
     
     # -- Seasonal data
     seasonal_dat <- dat %>%
@@ -292,6 +292,115 @@ expected_diagnostic <- function(expected,
                  pch   = 1,
                  data  = trend_obs) +
       geom_line(aes(date, trend * population / (1000 * 52)), 
+                color = color, 
+                size  = 0.80,
+                data  = trend) +
+      scale_y_continuous(labels = scales::comma) +
+      labs(x = "Date",
+           y = "Counts",
+           title = "Long-term trend")
+    
+    # -- Mean viz
+    p_mean <- expected$counts %>%
+      filter(date >= start & date <= end) %>%
+      mutate(lwr = exp(log(expected) - 2 * log_expected_se),
+             upr = exp(log(expected) + 2 * log_expected_se)) %>%
+      ggplot(aes(date, outcome)) +
+      geom_point(alpha = alpha) +
+      geom_ribbon(aes(ymin = lwr,
+                      ymax = upr),
+                  fill  = color, alpha = 0.5) +
+      geom_line(aes(date, expected), 
+                color = color,
+                size  = 0.80) +
+      scale_y_continuous(labels = scales::comma) +
+      labs(x = "Date",
+           y = "Counts",
+           title = "Expected Mortality Counts")
+    
+    # -- Residual viz
+    p_residual <- expected$counts %>%
+      filter(date >= start & date <= end) %>%
+      mutate(difference  = outcome - expected,
+             expected_se = expected * log_expected_se,
+             lwr         = -2 * expected_se,
+             upr         = 2 * expected_se) %>%
+      ggplot(aes(date, difference)) +
+      geom_point(alpha = alpha) +
+      geom_ribbon(aes(ymin = lwr,
+                      ymax = upr),
+                  fill  = color, alpha = 0.5) +
+      geom_line(aes(date, 0),
+                color = color,
+                size  = 0.80) +
+      scale_y_continuous(labels = scales::comma) +
+      labs(x = "Date",
+           y = "Observed - expected",
+           title = "Residual Plot")
+  } else if(attr(expected$counts, "frequency") %in% 12) {
+    
+    # -- Seasonal data
+    seasonal_dat <- dat %>%
+      filter(excluded == FALSE) %>%
+      group_by(month(date)) %>%
+      summarize(avg_outcome = mean(outcome)) %>%
+      ungroup() %>%
+      setNames(c("month", "avg_outcome"))
+    
+    # -- Population plot
+    p_population <- ggplot(aes(date, population), data = filter(dat, date >= start & date <= end)) +
+      geom_line(size = 0.80) +
+      geom_point(aes(date, population), 
+                 size  = 3, 
+                 color = color,
+                 data  = filter(dat, week(date)==26, date >= start & date <= end)) +
+      geom_point(aes(date, population), 
+                 size  = 3, 
+                 pch   = 1, 
+                 data  = filter(dat, week(date)==26, date >= start & date <= end)) +
+      scale_y_continuous(labels = scales::comma) +
+      labs(y     = "Population",
+           x     = "Date",
+           title = "Estimated Population Size")
+    
+    # -- Seasonal viz
+    p_seasonal <- seasonal_dat %>%
+      mutate(s = expected$seasonal$s) %>%
+      ggplot(aes(month, avg_outcome)) +
+      geom_point(alpha = alpha) +
+      geom_line(aes(month, (s + 1) * avg), 
+                color = color, 
+                size  = 0.80) +
+      scale_y_continuous(labels = scales::comma) +
+      labs(x = "Month of the year",
+           y = "Counts",
+           title = "Seasonal Component")
+    
+    # -- Extracting the trend component
+    trend <- tibble(date = expected$counts$date, trend = expected$trend) %>%
+      filter(date >= start & date <= end) %>%
+      left_join(select(dat, date, population), by = "date")
+    
+    # -- Getting yearly average death counts
+    trend_obs <- dat %>%
+      filter(date >= start & date <= end) %>%
+      mutate(year = year(date)) %>%
+      group_by(year) %>%
+      summarize(outcome = mean(outcome)) %>%
+      ungroup() %>%
+      mutate(date = lubridate::make_date(year, 07, 01))
+    
+    # -- Long term trend viz
+    p_trend <- ggplot() +
+      geom_point(aes(date, outcome), 
+                 size  = 3,
+                 alpha = 0.80,
+                 data  = trend_obs) +
+      geom_point(aes(date, outcome), 
+                 size  = 3,
+                 pch   = 1,
+                 data  = trend_obs) +
+      geom_line(aes(date, trend * population / (1000 * 12)), 
                 color = color, 
                 size  = 0.80,
                 data  = trend) +

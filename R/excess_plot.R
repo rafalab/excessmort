@@ -48,8 +48,7 @@ excess_plot <- function(fit,
     scale_y_continuous(labels = scales::percent) +
     scale_x_date(date_labels = "%b %Y") +
     ggtitle(title) +
-    xlab("Date") +
-    theme_bw()
+    xlab("Date")
 
   if(show.data) p <- p + geom_point(alpha = 0.3)
 

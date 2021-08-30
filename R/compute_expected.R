@@ -1,7 +1,7 @@
 #' Compute expected counts for each day
 #' 
 #' Compute the expected death count for each unit of time. 
-#' We assume counts are oversispersed Poisson distributed with a 
+#' We assume counts are ovedsispersed Poisson distributed with a 
 #' trend that accounts for changes in death rate across time and a seasonal effect. The function take data frame with 
 #' dates and counts and returns the data frame with the expected counts as a new 
 #' column. It also returns a logical column that is `TRUE` if that entry was 

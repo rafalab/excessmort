@@ -369,12 +369,7 @@ f <- lapply(seq_along(interval_start), function(i){
 
 We can examine the different hurricane effects.
 
-This is Georges:
 
-```{r, fig.align="center", fig.width=6, fig.height=4}
-# -- Visualizing deviations in mortality for Hurricane Georges
-excess_plot(f[[1]], title = names(interval_start)[1])
-```
 
 This is Maria:
 
@@ -383,17 +378,11 @@ This is Maria:
 excess_plot(f[[2]],  title = names(interval_start)[2])
 ```
 
-Chikungunya:
+You can also see the results for Georges, Chikungunya, and COVID-19 affected periods with the following code (graphs not shown to keep vignette size small)":
 
-```{r, fig.align="center", fig.width=6, fig.height=4}
-# -- Visualizing deviations in mortality for the Chikungunya epidemic
+```{r, eval= FALSE}
+excess_plot(f[[1]], title = names(interval_start)[1])
 excess_plot(f[[3]],  title = names(interval_start)[3])
-```
-
-And COVID-19
-
-```{r, fig.align="center", fig.width=6, fig.height=4}
-# -- Visualizing deviations in mortality for Covid-19
 excess_plot(f[[4]],  title = names(interval_start)[4])
 ```
 

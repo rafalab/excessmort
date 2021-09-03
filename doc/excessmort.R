@@ -218,20 +218,13 @@ f <- lapply(seq_along(interval_start), function(i){
 })
 
 ## ---- fig.align="center", fig.width=6, fig.height=4---------------------------
-# -- Visualizing deviations in mortality for Hurricane Georges
-excess_plot(f[[1]], title = names(interval_start)[1])
-
-## ---- fig.align="center", fig.width=6, fig.height=4---------------------------
 # -- Visualizing deviations in mortality for Hurricane Maria
 excess_plot(f[[2]],  title = names(interval_start)[2])
 
-## ---- fig.align="center", fig.width=6, fig.height=4---------------------------
-# -- Visualizing deviations in mortality for the Chikungunya epidemic
-excess_plot(f[[3]],  title = names(interval_start)[3])
-
-## ---- fig.align="center", fig.width=6, fig.height=4---------------------------
-# -- Visualizing deviations in mortality for Covid-19
-excess_plot(f[[4]],  title = names(interval_start)[4])
+## ---- eval= FALSE-------------------------------------------------------------
+#  excess_plot(f[[1]], title = names(interval_start)[1])
+#  excess_plot(f[[3]],  title = names(interval_start)[3])
+#  excess_plot(f[[4]],  title = names(interval_start)[4])
 
 ## ---- fig.align="center", fig.width=6, fig.height=4---------------------------
 

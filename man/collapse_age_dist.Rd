@@ -20,7 +20,9 @@ collapse_counts_by_age(counts, breaks)
 Collapse a count or demographic data frame into a broader age strata.
 }
 \examples{
+\dontrun{
 data(cook_records)
-demo <- collapse_age_dist(cook_demographics, breaks = c(0, 20, 40, 60, 80, Inf))
-
+demo <- collapse_age_dist(cook_demographics, 
+                          breaks = c(0, 20, 40, 60, 80, Inf))
+}
 }

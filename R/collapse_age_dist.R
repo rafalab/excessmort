@@ -7,9 +7,11 @@
 #' @param breaks The new age breaks for the new, broader, age strata
 #' 
 #' @examples
+#' \dontrun{
 #' data(cook_records)
-#' demo <- collapse_age_dist(cook_demographics, breaks = c(0, 20, 40, 60, 80, Inf))
-#' 
+#' demo <- collapse_age_dist(cook_demographics, 
+#'                           breaks = c(0, 20, 40, 60, 80, Inf))
+#' }
 #' @export
 #' @importFrom stats reorder
 #' @import dplyr

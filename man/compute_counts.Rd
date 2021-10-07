@@ -44,9 +44,11 @@ One can provide a data frame with demogrpahic inform through the `demo` argument
 population size for each group for each data.
 }
 \examples{
+\dontrun{
 data("cook_records")
 the_breaks <- c(0, 20, 40, 60, 75, Inf)
-compute_counts(cook_records, demo = cook_demographics, 
-by = c("agegroup", "race", "sex"), breaks = the_breaks)
-
+demo <- compute_counts(cook_records, demo = cook_demographics, 
+                       by = c("agegroup", "race", "sex"), 
+                       breaks = the_breaks)
+}
 }

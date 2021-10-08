@@ -8,7 +8,7 @@
 #' @param last_day Last day to interpolate.
 #' @param by Vector of column names to group by, for example different demographic strata
 #' 
-#' @return A data frame with dates and population estimates
+#' @return A data frame with dates and population estimates.
 #' @export
 #' @importFrom stats approx
 #' @import dplyr

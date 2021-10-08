@@ -32,6 +32,10 @@ expected_plot(
 
 \item{alpha}{alpha blending for points}
 }
+\value{
+A ggplot object containing a plot of the original counts and the 
+estimated expected values.
+}
 \description{
 Check if expected counts fit data
 }

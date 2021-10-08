@@ -10,11 +10,21 @@
 #' @param counts A data frame with dates, counts, and population size
 #' @param exclude A list of dates to exclude when fitting the model
 #' @param trend.knots.per.year Number of knots per year used for the time trend
-#' @param harmonics Nuber of harmoincs to include in the seasonal effect
+#' @param harmonics Number of harmonics to include in the seasonal effect
 #' @param frequency Number of data points per year. If not provided, the function attempts to estimate it
 #' @param weekday.effect A logical that determines if a day of the week effect is included in the model
-#' @param keep.components A logical that if `TRUE` forces the function to return the estimated trend, seaonal effect, and weekday effect, if included in the modl.
+#' @param keep.components A logical that if `TRUE` forces the function to return the estimated trend, seasonal model, and weekday effect, if included in the model.
 #' @param verbose A logical that if `TRUE` makes function prints out updates on the estimation procedure
+#' 
+#' @return The `counts` data.frame with two columns added: `expected` and `excluded`. 
+#' The `expected` column is the estimated expected value of the counts for that date.
+#' The `excluded` column is a logical vector denoting if that date was excluded when
+#' estimating the expected value.
+#' 
+#' If the argument `keep.components` is `TRUE` a list is returned with `counts`
+#' data.frame in the first component, the estimated trend in the second, the 
+#' estimated seasonal effect in the third and the estimated weekday effects in the fourth.
+#' 
 #' 
 #' @examples
 #' data(new_jersey_counts)

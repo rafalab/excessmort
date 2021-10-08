@@ -7,6 +7,15 @@
 #' @param end Last day to show
 #' @param color Color for the expected curve
 #' @param alpha alpha blending for points
+#' 
+#' @return A list with six ggplot objects: 
+#' `population` is a time series plot of the population.
+#' `seasonal` is a plot showing the estimated seasonal effect.
+#' `trend` is a time series plot showing the estimated trend.
+#' `weekday` is a plot of the estimated weekday effects if they were estimated.
+#' `expected`is a time series plot of the expected values.
+#' `residual` is a time series plot of the residuals.
+#' 
 #' @examples
 #' 
 #' library(dplyr)
@@ -22,8 +31,13 @@
 #'  compute_expected(exclude = exclude_dates,
 #'                   keep.components = TRUE)
 #'                   
-#' expected_diagnostic(expected = res, alpha = 0.50)
+#' p <- expected_diagnostic(expected = res, alpha = 0.50)
 #' 
+#' p$population
+#' p$seasonal
+#' p$trend
+#' p$expected
+#' p$residual
 
 #' @export
 #' @import dplyr

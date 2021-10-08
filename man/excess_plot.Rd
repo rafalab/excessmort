@@ -17,6 +17,9 @@ excess_plot(fit, title = "", ylim = NULL, show.data = TRUE, alpha = 0.05)
 
 \item{alpha}{1 - `alpha` confidence intervals are shown}
 }
+\value{
+An ggplot object containing the plot.
+}
 \description{
 Plot results from fitted excess count model
 }

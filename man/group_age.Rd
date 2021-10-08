@@ -11,6 +11,9 @@ group_age(age, breaks)
 
 \item{breaks}{Ages that define strata}
 }
+\value{
+A factor that groups the ages into the age groups defined by `breaks`.
+}
 \description{
 Assign age to group
 }

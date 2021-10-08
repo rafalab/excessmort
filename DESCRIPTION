@@ -1,13 +1,14 @@
 Package: excessmort
 Type: Package
 Title: Excess Mortality
-Version: 0.6.0
-Author: Rafael A. Irizarry, Rolando Acosta
-Maintainer: Rafael A. Irizarry <rafael_irizarry@dfci.harvard.edu>
+Version: 0.6.1
+Authors@R: c(person(c("Rafael", "A."), "Irizarry", email = "rafael_irizarry@dfci.harvard.edu",
+                  role = c("aut", "cre")),
+             person("Rolando", "Acosta", role = "aut"))
 Depends: R (>= 3.5.0),
-Imports: stats, 
-    datasets, 
-    dplyr, 
+Imports: stats,
+    datasets,
+    dplyr,
     tidyr,
     rlang,
     lubridate,
@@ -16,7 +17,7 @@ Imports: stats,
     scales
 Suggests: tidycensus, knitr, rmarkdown
 VignetteBuilder: knitr
-Description: Functions for estimating excess mortality and other health related outcomes from weekly or daily count data. 
+Description: Implementation of method for estimating excess mortality and other health related outcomes from weekly or daily count data described in Acosta and Irizarry (2021) "A Flexible Statistical Framework for Estimating Excess Mortality".
 License: Artistic-2.0
 Encoding: UTF-8
 LazyData: true

@@ -10,6 +10,10 @@
 #' @param weekly Logical that determines if data should be summarized into weekly counts
 #' @param color Color for the expected curve
 #' @param alpha alpha blending for points
+#' 
+#' @return A ggplot object containing a plot of the original counts and the 
+#' estimated expected values.
+#' 
 #' @examples
 #' data(new_jersey_counts)
 #' exclude_dates <- as.Date("2012-10-29") + 0:180

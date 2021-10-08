@@ -30,7 +30,7 @@ compute_counts(
 \item{breaks}{The ages that define the agegroups}
 }
 \value{
-A data frame with counts for each group for each date with population sizes, if demo was provided
+A data frame with counts for each group for each date with population sizes, if demo was provided.
 }
 \description{
 Compute counts for groups from individual records
@@ -44,11 +44,16 @@ One can provide a data frame with demogrpahic inform through the `demo` argument
 population size for each group for each data.
 }
 \examples{
-\dontrun{
+library(lubridate)
 data("cook_records")
 the_breaks <- c(0, 20, 40, 60, 75, Inf)
-demo <- compute_counts(cook_records, demo = cook_demographics, 
+
+## take subset for example
+cook_records_subset <- cook_records[year(cook_records$date)==2021, ]
+cook_demographics_subset <- cook_demographics[year(cook_demographics$date)==2021, ]
+
+cook_counts <- compute_counts(cook_records_subset, 
+                       demo = cook_demographics_subset, 
                        by = c("agegroup", "race", "sex"), 
                        breaks = the_breaks)
-}
 }

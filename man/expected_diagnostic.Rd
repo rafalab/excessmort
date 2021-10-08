@@ -23,6 +23,15 @@ expected_diagnostic(
 
 \item{alpha}{alpha blending for points}
 }
+\value{
+A list with six ggplot objects: 
+`population` is a time series plot of the population.
+`seasonal` is a plot showing the estimated seasonal effect.
+`trend` is a time series plot showing the estimated trend.
+`weekday` is a plot of the estimated weekday effects if they were estimated.
+`expected`is a time series plot of the expected values.
+`residual` is a time series plot of the residuals.
+}
 \description{
 Check mean model fit via diagnostic figures of the model components
 }
@@ -41,6 +50,11 @@ res  <- cdc_state_counts \%>\%
  compute_expected(exclude = exclude_dates,
                   keep.components = TRUE)
                   
-expected_diagnostic(expected = res, alpha = 0.50)
+p <- expected_diagnostic(expected = res, alpha = 0.50)
 
+p$population
+p$seasonal
+p$trend
+p$expected
+p$residual
 }

@@ -18,16 +18,21 @@
 #' @param agegroup The column name of the column that contains agegroup
 #' @param breaks The ages that define the agegroups
 #' 
-#' @return A data frame with counts for each group for each date with population sizes, if demo was provided
+#' @return A data frame with counts for each group for each date with population sizes, if demo was provided.
 #' 
 #' @examples
-#' \dontrun{
+#' library(lubridate)
 #' data("cook_records")
 #' the_breaks <- c(0, 20, 40, 60, 75, Inf)
-#' demo <- compute_counts(cook_records, demo = cook_demographics, 
+#' 
+#' ## take subset for example
+#' cook_records_subset <- cook_records[year(cook_records$date)==2021, ]
+#' cook_demographics_subset <- cook_demographics[year(cook_demographics$date)==2021, ]
+#' 
+#' cook_counts <- compute_counts(cook_records_subset, 
+#'                        demo = cook_demographics_subset, 
 #'                        by = c("agegroup", "race", "sex"), 
 #'                        breaks = the_breaks)
-#' }
 #' @export
 #' @import dplyr
 #' @import rlang

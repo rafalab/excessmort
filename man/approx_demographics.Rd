@@ -16,7 +16,7 @@ approx_demographics(demo, first_day, last_day, by = "year")
 \item{by}{Vector of column names to group by, for example different demographic strata}
 }
 \value{
-A data frame with dates and population estimates
+A data frame with dates and population estimates.
 }
 \description{
 Interpolate yearly population estimates so that a population estimate is provided for 

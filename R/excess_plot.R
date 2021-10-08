@@ -5,6 +5,9 @@
 #' @param ylim A vector with two numbers that determines the kimits for the y-axis
 #' @param show.data A logical that determines if the observed percent changes are shown
 #' @param alpha  1 - `alpha` confidence intervals are shown
+#' 
+#' @return An ggplot object containing the plot.
+#' 
 #' @examples
 #' data(new_jersey_counts)
 #' exclude_dates <- as.Date("2012-10-29") + 0:180

@@ -1,7 +1,7 @@
 Package: excessmort
 Type: Package
 Title: Excess Mortality
-Version: 0.6.1
+Version: 0.6.2
 Authors@R: c(person(c("Rafael", "A."), "Irizarry", email = "rafael_irizarry@dfci.harvard.edu",
                   role = c("aut", "cre")),
              person("Rolando", "Acosta", role = "aut"))
@@ -22,4 +22,4 @@ License: Artistic-2.0
 Encoding: UTF-8
 LazyData: true
 LazyDataCompression: xz
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.0

@@ -14,6 +14,7 @@ excess_model(
   discontinuity = TRUE,
   model = c("quasipoisson", "poisson", "correlated"),
   exclude = NULL,
+  include.trend = TRUE,
   trend.knots.per.year = 1/7,
   harmonics = 2,
   frequency = NULL,
@@ -47,6 +48,8 @@ excess_model(
 \item{model}{Which version of the model to fit}
 
 \item{exclude}{Dates to exclude when computing expected counts}
+
+\item{include.trend}{Logical that determines if a slow trend is included in the model.}
 
 \item{trend.knots.per.year}{Number of knots per year used by `compute_expected` to estimate the trend for the expected counts}
 

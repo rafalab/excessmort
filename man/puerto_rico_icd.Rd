@@ -6,7 +6,7 @@
 \alias{icd}
 \title{Puerto Rico daily mortality by cause of death}
 \format{
-An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 241080 rows and 4 columns.
+An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 251940 rows and 4 columns.
 }
 \usage{
 data("puerto_rico_icd")

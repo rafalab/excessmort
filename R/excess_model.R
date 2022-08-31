@@ -24,6 +24,7 @@
 #' @param discontinuity Logical that determines if discontinuity is allowed at `event`
 #' @param model Which version of the model to fit
 #' @param exclude Dates to exclude when computing expected counts
+#' @param include.trend Logical that determines if a slow trend is included in the model.
 #' @param trend.knots.per.year Number of knots per year used by `compute_expected` to estimate the trend for the expected counts
 #' @param harmonics Number of harmonics used by `compute_expected` to estimate seasonal trend
 #' @param frequency Number of observations per year. If not provided an attempt is made to calculate it
@@ -90,6 +91,7 @@ excess_model <- function(counts,
                          discontinuity = TRUE,
                          model = c("quasipoisson", "poisson", "correlated"),
                          exclude = NULL,
+                         include.trend = TRUE,
                          trend.knots.per.year = 1/7,
                          harmonics = 2,
                          frequency = NULL,
@@ -112,6 +114,7 @@ excess_model <- function(counts,
     if(verbose) message("Computing expected counts.")
     counts <-  compute_expected(counts,
                                 exclude = exclude,
+                                include.trend = include.trend,
                                 trend.knots.per.year = trend.knots.per.year,
                                 harmonics = harmonics,
                                 frequency = frequency,
@@ -127,11 +130,15 @@ excess_model <- function(counts,
   dispersion <- attr(counts, "dispersion")
 
   ## checks
+  if(frequency == 12 & correlated.errors){
+    stop("Correlated error model, model = \"correlated\", can't be fitted with monthly data.")
+  }
+
   if(any(counts$excluded)) exclude <- counts$date[counts$excluded] else exclude <- NULL
 
   if(correlated.errors & is.null(control.dates)){
     if(!is.null(exclude)){
-      warning("No control region suplied, which is not recommended when correlated.errors = TRUE. Using data up to first excluded point.")
+      warning("No control region suplied, which is not recommended when model = \"correlated\". Using data up to first excluded point.")
       control.dates <-seq(min(counts$date), min(exclude, na.rm = TRUE) - 1, by = "day")
       } else{
       warning("No control region suplied, which is not recommended when correlated.errors = TRUE. Using all the data")
@@ -148,7 +155,6 @@ excess_model <- function(counts,
   if(is.null(start) & is.null(end) & is.null(intervals))
     stop("You must provide start and end or intervals.")
 
-
   ## check to see if counts per unit of time are high enough for model to work
   if(mean(counts$outcome, na.rm = TRUE) < 1 & correlated.errors)
     warning("Low counts per unit of time, consider fitting model with no correlation.")
@@ -156,6 +162,10 @@ excess_model <- function(counts,
   ## compute_expected always uses quasipoisson
   if(match.arg(model) == "poisson") dispersion <- 1
 
+  if(frequency == 12){
+    message("Monthly data detected. Fitting a model with different mean level for each month. Ingoring knots.per.year and event_index arguments.")
+  }
+  
   ## Use control days to compute the autocorrelation function
   if(correlated.errors){
     arfit <- fit_ar(counts, control.dates, order.max = order.max, aic = aic)
@@ -191,23 +201,29 @@ excess_model <- function(counts,
     ## compute residuals to fit ar model
     if(correlated.errors) y <- (obs - mu) / mu
 
-    ## create the design matrix
-    nknots <- round(knots.per.year * as.numeric(max(date) - min(date)) / 365)
-    knots <- x[round(seq(1, n, length = nknots + 2))]
-    knots <- knots[-c(1, length(knots))]
-    if(!is.null(event)){
-      event_index <- x[which.min(abs(as.numeric(date - event)))]
-      i <- which.min(abs(knots - event_index))
-      ##shift knots so that one of the internal knots falls on the event day
-      knots <- knots + (event_index -  knots[i])
-      X <- cbind(1, splines::ns(x, knots = knots))
-      ## add parameters to account for discontinuity
-      if(discontinuity){
-        after_ind <- as.numeric(I(x >= event_index))
-        X <- cbind(X, after_ind, poly((x - event_index)*after_ind, degree = 2))
+    if(frequency!=12){
+      ## create the design matrix
+      nknots <- round(knots.per.year * as.numeric(max(date) - min(date)) / 365)
+      knots <- x[round(seq(1, n, length = nknots + 2))]
+      knots <- knots[-c(1, length(knots))]
+      if(!is.null(event)){
+        event_index <- x[which.min(abs(as.numeric(date - event)))]
+        i <- which.min(abs(knots - event_index))
+        ##shift knots so that one of the internal knots falls on the event day
+        knots <- knots + (event_index -  knots[i])
+        X <- cbind(1, splines::ns(x, knots = knots))
+        ## add parameters to account for discontinuity
+        if(discontinuity){
+          after_ind <- as.numeric(I(x >= event_index))
+          X <- cbind(X, after_ind, poly((x - event_index)*after_ind, degree = 2))
+        }
+      } else{
+        X <- cbind(1, splines::ns(x, knots = knots))
       }
     } else{
-      X <- cbind(1, splines::ns(x, knots = knots))
+      ## fit a saturated model: every month gets a mean value
+      months <- as.factor(date)
+      X <- model.matrix(~months)
     }
 
     if(correlated.errors){

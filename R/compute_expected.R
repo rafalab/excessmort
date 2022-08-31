@@ -9,6 +9,7 @@
 #' 
 #' @param counts A data frame with dates, counts, and population size
 #' @param exclude A list of dates to exclude when fitting the model
+#' @param include.trend Logical that determines if a slow trend is included in the model.
 #' @param trend.knots.per.year Number of knots per year used for the time trend
 #' @param harmonics Number of harmonics to include in the seasonal effect
 #' @param frequency Number of data points per year. If not provided, the function attempts to estimate it
@@ -38,6 +39,7 @@
 #'
 compute_expected <- function(counts,
                              exclude = NULL,
+                             include.trend = TRUE,
                              trend.knots.per.year = 1/7,
                              harmonics = 2,
                              frequency = NULL,
@@ -65,7 +67,9 @@ compute_expected <- function(counts,
     warning("No dates excluded. We recommend excluding at least the dates surrounding the event of interest.")
   }
 
-  if(!identical(counts$date, arrange(counts,date)$date)) stop("counts must be ordered by date.")
+  if(!identical(counts$date, arrange(counts, date)$date)) stop("counts must be ordered by date.")
+
+  if(include.trend & as.numeric(diff(range(counts$date)) / 365) < 5) warning("Including a trend in the model is not recommended with less than five years of data. Consider setting include.trend = FALSE.")
 
   ## helper function
   fourier_trend <- function(x, k = 3){
@@ -84,9 +88,13 @@ compute_expected <- function(counts,
   }
 
   if(frequency < 365 & weekday.effect){
-    warning("Modeling day effects is not recommended when frequency < 365. Consider setting weekday.effct = FALSE")
+    warning("Modeling day effects is not recommended when frequency < 365. Consider setting weekday.effect = FALSE")
   }
 
+  if(frequency == 12){
+    message("Monthly data detected: fitting monthly model and ingnoring harmonics and weekday.effect arguments.")
+  }
+  
   if(verbose) message("Overall death rate is ", signif(sum(counts$outcome, na.rm = TRUE)/sum(counts$population, na.rm = TRUE) * frequency * 1000, 3), ".")
 
   if(mean(counts$outcome, na.rm = TRUE) < 1)
@@ -104,27 +112,42 @@ compute_expected <- function(counts,
   knots <- seq(min(tt), max(tt), length = nknots)
     
   # make trend basis (includes intercept)
-  if(nknots > 2){
-    
-    knots <- knots[-c(1, length(knots))]
-    x_t <- splines::ns(tt, knots = knots, intercept = TRUE)
-    
-  } else{
-    
-    knots <- c()
-    x_t <- model.matrix(~tt)
+  if(include.trend){
+    if(nknots > 2){
+      
+      knots <- knots[-c(1, length(knots))]
+      x_t <- splines::ns(tt, knots = knots, intercept = TRUE)
+      
+    } else{
+      
+      knots <- c()
+      x_t <- model.matrix(~tt)
+    } 
+  } else{ ## just an intercept
+    x_t <- matrix(1, nrow=length(tt))
+    trend.knots.per.year <- NA
+    knots <- NA
   }
   
   # trend indices 
   i_t <- 1:ncol(x_t)
 
-  #for harmonic model
-  yd <- noleap_yday(counts$date)
-  x_h <- fourier_trend(yd, k = harmonics)
+  if(frequency != 12){
+    #for harmonic model
+    yd <- noleap_yday(counts$date)
+    x_h <- fourier_trend(yd, k = harmonics)
+  } else{
+    #for monthly model
+    months <- as.factor(lubridate::month(counts$date))
+    x_h <- model.matrix(~months)[,-1]
+    harmonics <- NA
+    weekday.effect <- FALSE
+  }
+  
   i_h <- ncol(x_t) + 1:ncol(x_h)
-
+    
   ## build desing matrix
-  if(weekday.effect){
+  if(weekday.effect & frequency != 12){
     ## weekday effects
     w <- factor(lubridate::wday(counts$date))
     contrasts(w) <- contr.sum(length(levels(w)), contrasts = TRUE)
@@ -141,7 +164,7 @@ compute_expected <- function(counts,
 
   ## fit model
 
-  fit <- glm( y[index] ~ x[index,]-1, offset = log(n[index]), family = "quasipoisson")
+  fit <- glm(y[index] ~ x[index,]-1, offset = log(n[index]), family = "quasipoisson")
   dispersion <- pmax(1, summary(fit)$dispersion)
 
   # prepare stuff to return
@@ -182,7 +205,7 @@ compute_expected <- function(counts,
     res <- counts
   }
 
-  attr(res, "class") <-  append(class(res), "compute_expected")
+  attr(res, "class") <-  append("compute_expected", class(res))
   attr(res, "keep.components") <- keep.components
 
   return(res)

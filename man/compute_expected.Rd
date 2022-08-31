@@ -7,6 +7,7 @@
 compute_expected(
   counts,
   exclude = NULL,
+  include.trend = TRUE,
   trend.knots.per.year = 1/7,
   harmonics = 2,
   frequency = NULL,
@@ -19,6 +20,8 @@ compute_expected(
 \item{counts}{A data frame with dates, counts, and population size}
 
 \item{exclude}{A list of dates to exclude when fitting the model}
+
+\item{include.trend}{Logical that determines if a slow trend is included in the model.}
 
 \item{trend.knots.per.year}{Number of knots per year used for the time trend}
 

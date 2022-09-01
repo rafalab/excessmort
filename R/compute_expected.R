@@ -92,7 +92,7 @@ compute_expected <- function(counts,
   }
 
   if(frequency == 12){
-    message("Monthly data detected: fitting monthly model and ingnoring harmonics and weekday.effect arguments.")
+    message("Monthly data detected: computing expected counts with a month effect, ingnoring harmonics and weekday.effect arguments.")
   }
   
   if(verbose) message("Overall death rate is ", signif(sum(counts$outcome, na.rm = TRUE)/sum(counts$population, na.rm = TRUE) * frequency * 1000, 3), ".")

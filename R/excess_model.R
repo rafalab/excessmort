@@ -163,7 +163,7 @@ excess_model <- function(counts,
   if(match.arg(model) == "poisson") dispersion <- 1
 
   if(frequency == 12){
-    message("Monthly data detected. Fitting a model with different mean level for each month. Ingoring knots.per.year and event_index arguments.")
+    message("Monthly data detected: excess is estimated for each month rather than modeling with smooth function, ingoring knots.per.year and event arguments.")
   }
   
   ## Use control days to compute the autocorrelation function

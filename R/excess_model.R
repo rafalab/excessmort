@@ -162,10 +162,6 @@ excess_model <- function(counts,
   ## compute_expected always uses quasipoisson
   if(match.arg(model) == "poisson") dispersion <- 1
 
-  if(frequency == 12){
-    message("Monthly data detected: excess is estimated for each month rather than modeling with smooth function, ingoring knots.per.year and event arguments.")
-  }
-  
   ## Use control days to compute the autocorrelation function
   if(correlated.errors){
     arfit <- fit_ar(counts, control.dates, order.max = order.max, aic = aic)
@@ -201,29 +197,40 @@ excess_model <- function(counts,
     ## compute residuals to fit ar model
     if(correlated.errors) y <- (obs - mu) / mu
 
-    if(frequency!=12){
-      ## create the design matrix
-      nknots <- round(knots.per.year * as.numeric(max(date) - min(date)) / 365)
-      knots <- x[round(seq(1, n, length = nknots + 2))]
-      knots <- knots[-c(1, length(knots))]
-      if(!is.null(event)){
-        event_index <- x[which.min(abs(as.numeric(date - event)))]
-        i <- which.min(abs(knots - event_index))
-        ##shift knots so that one of the internal knots falls on the event day
-        knots <- knots + (event_index -  knots[i])
-        X <- cbind(1, splines::ns(x, knots = knots))
-        ## add parameters to account for discontinuity
-        if(discontinuity){
-          after_ind <- as.numeric(I(x >= event_index))
-          X <- cbind(X, after_ind, poly((x - event_index)*after_ind, degree = 2))
-        }
-      } else{
-        X <- cbind(1, splines::ns(x, knots = knots))
+    ## create the design matrix
+    nknots <- round(knots.per.year * as.numeric(max(date) - min(date)) / 365)
+    knots <- x[round(seq(1, n, length = nknots + 2))]
+    knots <- knots[-c(1, length(knots))]
+    if(!is.null(event)){
+      event_index <- x[which.min(abs(as.numeric(date - event)))]
+      i <- which.min(abs(knots - event_index))
+      ##shift knots so that one of the internal knots falls on the event day
+      knots <- knots + (event_index -  knots[i])
+      X <- cbind(1, splines::ns(x, knots = knots))
+      ## add parameters to account for discontinuity
+      if(discontinuity){
+        after_ind <- as.numeric(I(x >= event_index))
+        X <- cbind(X, after_ind, poly((x - event_index)*after_ind, degree = 2))
       }
     } else{
+      X <- cbind(1, splines::ns(x, knots = knots))
+    }
+    
+    bad_cond_1 <- n <= ncol(X)
+    bad_cond_2 <- qr(X)$rank < ncol(X)
+    
+    if(bad_cond_1 | bad_cond_2){
+      
       ## fit a saturated model: every month gets a mean value
-      months <- as.factor(date)
-      X <- model.matrix(~months)
+      
+      if(bad_cond_1) warning("Model degrees of freedom exceeds number of observations: fitting a saturated model. Consider reducing knots.per.year.")
+      
+      if(!bad_cond_1 & bad_cond_2) warning("Model design resulted in singular matrix: fitting a saturated model. Consider reducing knots.per.year.")
+      
+      
+      dates <- as.factor(date)
+      X <- model.matrix(~dates)
+      
     }
 
     if(correlated.errors){

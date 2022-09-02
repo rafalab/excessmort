@@ -91,8 +91,15 @@ compute_expected <- function(counts,
     warning("Modeling day effects is not recommended when frequency < 365. Consider setting weekday.effect = FALSE")
   }
 
-  if(frequency == 12){
-    message("Monthly data detected: computing expected counts with a month effect, ingnoring harmonics and weekday.effect arguments.")
+  if(weekday.effect == TRUE){
+    if(frequency==12){
+      message("Monthly data detected,  ingnoring weekday.effect argument.")
+      weekday.effect <- FALSE
+    }
+    if(floor(frequency)==52){
+      message("Weekly data detected,  ingnoring weekday.effect argument.")
+      weekday.effect <- FALSE
+    }
   }
   
   if(verbose) message("Overall death rate is ", signif(sum(counts$outcome, na.rm = TRUE)/sum(counts$population, na.rm = TRUE) * frequency * 1000, 3), ".")
@@ -132,22 +139,14 @@ compute_expected <- function(counts,
   # trend indices 
   i_t <- 1:ncol(x_t)
 
-  if(frequency != 12){
-    #for harmonic model
-    yd <- noleap_yday(counts$date)
-    x_h <- fourier_trend(yd, k = harmonics)
-  } else{
-    #for monthly model
-    months <- as.factor(lubridate::month(counts$date))
-    x_h <- model.matrix(~months)[,-1]
-    harmonics <- NA
-    weekday.effect <- FALSE
-  }
+  #for harmonic model
+  yd <- noleap_yday(counts$date)
+  x_h <- fourier_trend(yd, k = harmonics)
   
   i_h <- ncol(x_t) + 1:ncol(x_h)
     
   ## build desing matrix
-  if(weekday.effect & frequency != 12){
+  if(weekday.effect){
     ## weekday effects
     w <- factor(lubridate::wday(counts$date))
     contrasts(w) <- contr.sum(length(levels(w)), contrasts = TRUE)

@@ -106,12 +106,12 @@ excess_model <- function(counts,
                          min.rate = 0.0001,
                          verbose = TRUE){
 
-  if("compute_expected" %in% class(counts)){
-    if(attr(counts, "keep.components")){
+  if ("compute_expected" %in% class(counts)) {
+    if (attr(counts, "keep.components")) {
       counts <- counts$counts
     }
   } else{
-    if(verbose) message("Computing expected counts.")
+    if (verbose) message("Computing expected counts.")
     counts <-  compute_expected(counts,
                                 exclude = exclude,
                                 include.trend = include.trend,
@@ -130,85 +130,88 @@ excess_model <- function(counts,
   dispersion <- attr(counts, "dispersion")
 
   ## checks
-  if(frequency == 12 & correlated.errors){
+  if (frequency == 12 & correlated.errors) {
     stop("Correlated error model, model = \"correlated\", can't be fitted with monthly data.")
   }
 
-  if(any(counts$excluded)) exclude <- counts$date[counts$excluded] else exclude <- NULL
-
-  if(correlated.errors & is.null(control.dates)){
-    if(!is.null(exclude)){
+  if (any(counts$excluded)) {
+    exclude <- counts$date[counts$excluded] 
+  } else{
+    exclude <- NULL
+  }
+  if (correlated.errors & is.null(control.dates)) {
+    if (!is.null(exclude)) {
       warning("No control region suplied, which is not recommended when model = \"correlated\". Using data up to first excluded point.")
-      control.dates <-seq(min(counts$date), min(exclude, na.rm = TRUE) - 1, by = "day")
+      control.dates <- seq(min(counts$date), min(exclude, na.rm = TRUE) - 1, by = "day")
       } else{
       warning("No control region suplied, which is not recommended when correlated.errors = TRUE. Using all the data")
       control.dates <- counts$date
     }
   }
 
-  if(length(control.dates) > max.control & correlated.errors)
+  if (length(control.dates) > max.control & correlated.errors)
    stop("Length of control longer than", max.control)
 
-  if((is.null(start) & !is.null(end)) | (!is.null(start) & is.null(end)))
+  if ((is.null(start) & !is.null(end)) | (!is.null(start) & is.null(end)))
     stop("You must provide both start and end, not just one.")
 
-  if(is.null(start) & is.null(end) & is.null(intervals))
+  if (is.null(start) & is.null(end) & is.null(intervals))
     stop("You must provide start and end or intervals.")
 
   ## check to see if counts per unit of time are high enough for model to work
-  if(mean(counts$outcome, na.rm = TRUE) < 1 & correlated.errors)
+  if (mean(counts$outcome, na.rm = TRUE) < 1 & correlated.errors)
     warning("Low counts per unit of time, consider fitting model with no correlation.")
 
   ## compute_expected always uses quasipoisson
-  if(match.arg(model) == "poisson") dispersion <- 1
+  if (match.arg(model) == "poisson") dispersion <- 1
 
   ## Use control days to compute the autocorrelation function
-  if(correlated.errors){
+  if (correlated.errors) {
     arfit <- fit_ar(counts, control.dates, order.max = order.max, aic = aic)
     s <- arfit$sigma
-    if(verbose) message("Order selected for AR model is ",length(arfit$ar),
+    if (verbose) message("Order selected for AR model is ",length(arfit$ar),
                         ". Estimated residual standard error is ", signif(arfit$sigma, 2), ".")
   }
 
   ## Fit start and end provided, fit the curve
-  if(!is.null(start) & !is.null(end)){
+  if (!is.null(start) & !is.null(end)) {
 
-    if(!is.null(event)){
-      if(event >= end | event <= start)
+    if (!is.null(event)) {
+      if (event >= end | event <= start)
         stop("event must be between start and end.")
     }
 
     ## now fit the GLS to the relevant subset of data
     include_dates = seq(start, end, by = "day")
 
-    if(frequency == 365)
+    if (frequency == 365)
       include_dates <- include_dates[!(lubridate::month(include_dates) == 2 & lubridate::day(include_dates) == 29)]
 
     ind <- which(counts$date %in% include_dates)
     date <- counts$date[ind]
     n <- length(ind)
-    x <- 0:(n-1) / frequency * 365
+    x <- 0:(n - 1) / frequency * 365
     mu <- pmax(min.rate, counts$expected[ind])
-    if(any(mu == min.rate)) warning("Minimum expected rate reached and was set at ", min.rate, ".")
+    if (any(mu == min.rate)) warning("Minimum expected rate reached and was set at ", min.rate, ".")
     min.fhat <- min.rate / mu - 1
     obs <- counts$outcome[ind]
     pop <- counts$population[ind]
 
     ## compute residuals to fit ar model
-    if(correlated.errors) y <- (obs - mu) / mu
+    if (correlated.errors) y <- (obs - mu) / mu
 
     ## create the design matrix
     nknots <- round(knots.per.year * as.numeric(max(date) - min(date)) / 365)
     knots <- x[round(seq(1, n, length = nknots + 2))]
     knots <- knots[-c(1, length(knots))]
-    if(!is.null(event)){
+    if (!is.null(event)){
       event_index <- x[which.min(abs(as.numeric(date - event)))]
       i <- which.min(abs(knots - event_index))
       ##shift knots so that one of the internal knots falls on the event day
       knots <- knots + (event_index -  knots[i])
       X <- cbind(1, splines::ns(x, knots = knots))
       ## add parameters to account for discontinuity
-      if(discontinuity){
+      if (discontinuity) {
         after_ind <- as.numeric(I(x >= event_index))
         X <- cbind(X, after_ind, poly((x - event_index)*after_ind, degree = 2))
       }
@@ -219,13 +222,13 @@ excess_model <- function(counts,
     bad_cond_1 <- n <= ncol(X)
     bad_cond_2 <- qr(X)$rank < ncol(X)
     
-    if(bad_cond_1 | bad_cond_2){
+    if (bad_cond_1 | bad_cond_2) {
       
       ## fit a saturated model: every month gets a mean value
       
-      if(bad_cond_1) warning("Model degrees of freedom exceeds number of observations: fitting a saturated model. Consider reducing knots.per.year.")
+      if (bad_cond_1) warning("Model degrees of freedom exceeds number of observations: fitting a saturated model. Consider reducing knots.per.year.")
       
-      if(!bad_cond_1 & bad_cond_2) warning("Model design resulted in singular matrix: fitting a saturated model. Consider reducing knots.per.year.")
+      if (!bad_cond_1 & bad_cond_2) warning("Model design resulted in singular matrix: fitting a saturated model. Consider reducing knots.per.year.")
       
       
       dates <- as.factor(date)
@@ -233,15 +236,15 @@ excess_model <- function(counts,
       
     }
 
-    if(correlated.errors){
+    if (correlated.errors) {
       fhat <- 0
       beta <- 0;
-      dev<- 2*sum(ifelse(obs == 0, 0, obs * log(obs / mu)) - (obs - mu))
+      dev <- 2*sum(ifelse(obs == 0, 0, obs * log(obs / mu)) - (obs - mu))
       ## convinience function
       mysolve <- function(x) chol2inv(chol(x))
 
       ## parameters for covariance matrix
-      if(length(arfit$ar) > 0 & arfit$sigma > 0){
+      if (length(arfit$ar) > 0 & arfit$sigma > 0) {
         rhos <- ARMAacf(ar = arfit$ar, ma = 0, lag.max = n)
       }
 
@@ -249,8 +252,8 @@ excess_model <- function(counts,
       count <- 0
       flag <- TRUE
       log_mu_vari <- counts$log_expected_se[ind]^2
-      while(count < maxit & flag){
-        if(length(arfit$ar) > 0 & s > 0){
+      while (count < maxit & flag) {
+        if (length(arfit$ar) > 0 & s > 0) {
           Sigma <- apply(abs(outer(1:n, 1:n, "-")) + 1, 1, function(i) rhos[i]) * 
             outer(sqrt((1 + fhat)^2 * s^2 + (1 + fhat)/mu + (1 + fhat)^2 * log_mu_vari), sqrt((1 + fhat)^2 * s^2 + (1 + fhat)/mu + (1 + fhat)^2 * log_mu_vari))
           Sigma_inv <- mysolve(Sigma)
@@ -267,7 +270,7 @@ excess_model <- function(counts,
         dev <- 2*sum(ifelse(obs == 0, 0, obs * log(obs / (mu*(1 + fhat)))) - (obs - mu*(1 + fhat)))
         flag <- abs(dev - devold)/(0.1 + abs(dev)) >= epsilon
       }
-      if(count > maxit) warning("No convergence after ", maxit, " imterations.")
+      if (count > maxit) warning("No convergence after ", maxit, " imterations.")
 
       se <- sqrt(apply(X, 1, function(x) matrix(x, nrow = 1) %*% xwxi %*% matrix(x, ncol = 1)))
       betacov <- xwxi
@@ -277,21 +280,21 @@ excess_model <- function(counts,
       tmp <- predict(fit, se = TRUE, type = "response")
       fhat <- pmax(tmp$fit/mu - 1, min.fhat)
       lambda <- fitted.values(fit)
-      cova <- summary(fit)$cov.unscaled * summary(fit)$dispersion
+      cova <- summary(fit)$cov.unscaled*dispersion
       lambda_vari <- lambda^2 * diag(X %*% cova %*% t(X))
-      mu_vari <- counts$expected[ind]^2 * counts$log_expected_se[ind]^2
+      mu_vari <- counts$expected[ind]^2*counts$log_expected_se[ind]^2
       se <- sqrt((lambda_vari / mu^2) + (lambda^2 * mu_vari / mu^4))
-      Sigma <- diag(n) *  summary(fit)$dispersion / mu
-      betacov <- summary(fit)$cov.unscaled * summary(fit)$dispersion
+      Sigma <- diag(n)*summary(fit)$dispersion/mu
+      betacov <- summary(fit)$cov.unscaled*dispersion
     }
 
     ## Warning if minimum reached
-    if(any(fhat == min.fhat)) warning("Minimum rate reached and was set so that estimated rate is ", min.rate, ".")
+    if (any(fhat == min.fhat)) warning("Minimum rate reached and was set so that estimated rate is ", min.rate, ".")
     
     ## Compute regions for which estimate was outside usual range
 
     excess_ind <- which(fhat - qnorm(1 - alpha/2) * se >= 0)
-    if(length(excess_ind) > 0){
+    if (length(excess_ind) > 0) {
       cluster <- cumsum(c(2, diff(excess_ind)) > 1)
       indexes <- split(excess_ind, cluster)
       excess <- lapply(indexes, function(i){
@@ -304,12 +307,12 @@ excess_model <- function(counts,
                      counts$population[ind[i]],
                      frequency,
                      fhat[i],
-                     X[i,,drop=FALSE],
+                     X[i,,drop = FALSE],
                      betacov)
       })
       detected_intervals <- do.call(rbind, excess)
     } else{
-      detected_intervals <- data.frame(start = NA, end = NA, total = 0, se = NA, natural= NA)
+      detected_intervals <- data.frame(start = NA, end = NA, total = 0, se = NA, natural = NA)
     }
     ret <- list(date = date,
                 observed = obs,
@@ -329,7 +332,7 @@ excess_model <- function(counts,
     attr(ret, "model") <- match.arg(model)
     attr(ret, "type") <- "curve_fit"
 
-    if(correlated.errors){
+    if (correlated.errors) {
       ret$ar <-  arfit
     }
 
@@ -337,7 +340,7 @@ excess_model <- function(counts,
 
   ## If intervals provided compute excess deaths
   ## The uncertainty is calculated under the null
-  if(!is.null(intervals)){
+  if (!is.null(intervals)) {
     res <- lapply(intervals, function(dates){
       ind         <- which(counts$date %in% dates)
       date        <- counts$date[ind]
@@ -345,11 +348,11 @@ excess_model <- function(counts,
       mu          <- counts$expected[ind]
       log_mu_vari <- counts$log_expected_se[ind]^2
 
-      if(correlated.errors){
-        if(length(arfit$ar) > 0 & arfit$sigma > 0){
+      if (correlated.errors) {
+        if (length(arfit$ar) > 0 & arfit$sigma > 0) {
           rhos <- ARMAacf(ar = arfit$ar, ma = 0, lag.max = n)
         }
-        if(length(arfit$ar) > 0 & arfit$sigma > 0){
+        if (length(arfit$ar) > 0 & arfit$sigma > 0) {
           Sigma <- apply(abs(outer(1:n, 1:n, "-")) + 1, 1, function(i) rhos[i]) *
             outer(sqrt(s^2 + 1/mu + log_mu_vari), sqrt(s^2 + 1/mu + log_mu_vari))
         } else{
@@ -368,7 +371,7 @@ excess_model <- function(counts,
                    frequency)
     })
     res <- do.call(rbind, res)
-    if(!exists("ret")){
+    if (!exists("ret")) {
       ret <- res
       attr(ret, "type") <- "excess"
     }  else{

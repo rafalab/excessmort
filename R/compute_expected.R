@@ -11,6 +11,7 @@
 #' @param exclude A list of dates to exclude when fitting the model
 #' @param include.trend Logical that determines if a slow trend is included in the model.
 #' @param trend.knots.per.year Number of knots per year used for the time trend
+#' @param extrapolate Logical that determines if the slow trend is extrapolated past the range of data used to fit.
 #' @param harmonics Number of harmonics to include in the seasonal effect
 #' @param frequency Number of data points per year. If not provided, the function attempts to estimate it
 #' @param weekday.effect A logical that determines if a day of the week effect is included in the model
@@ -41,6 +42,7 @@ compute_expected <- function(counts,
                              exclude = NULL,
                              include.trend = TRUE,
                              trend.knots.per.year = 1/7,
+                             extrapolate = FALSE,
                              harmonics = 2,
                              frequency = NULL,
                              weekday.effect = FALSE,
@@ -112,23 +114,39 @@ compute_expected <- function(counts,
 
   tt <- as.numeric(counts$date)
   index <- !(counts$date %in% exclude)
-
-  # compute knots
-  years <- (max(tt) - min(tt)) / 365
-  nknots <- floor(years*trend.knots.per.year) + 1
-  knots <- seq(min(tt), max(tt), length = nknots)
-    
+  last_index <- max(which(index))
+  first_index <- min(which(index))
+  
+  if(!extrapolate){
+    ## index to later keep constant beacuse we are not extrapolating
+    if(last_index < length(index)) end_extrapolate_index <- seq(last_index+1, length(index)) else end_extrapolate_index <- NULL
+    if(first_index > 1) start_extrapolate_index <- seq(1, first_index - 1) else start_extrapolate_index <- NULL
+  }
+  
   # make trend basis (includes intercept)
   if(include.trend){
+    
+    ttt <- tt
+    
+    if(!extrapolate){
+      ttt[end_extrapolate_index] <- tt[last_index]  
+      ttt[start_extrapolate_index] <- tt[first_index]
+    }
+    
+    # compute knots
+    years <- (last_index - first_index) / 365
+    nknots <- floor(years*trend.knots.per.year) + 1
+    knots <- seq(min(ttt), max(ttt), length = nknots)
+    
     if(nknots > 2){
       
       knots <- knots[-c(1, length(knots))]
-      x_t <- splines::ns(tt, knots = knots, intercept = TRUE)
+      x_t <- splines::ns(ttt, knots = knots, intercept = TRUE)
       
     } else{
       
       knots <- c()
-      x_t <- model.matrix(~tt)
+      x_t <- model.matrix(~ttt)
     } 
   } else{ ## just an intercept
     x_t <- matrix(1, nrow=length(tt))

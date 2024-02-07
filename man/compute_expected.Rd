@@ -13,14 +13,14 @@ compute_expected(
   harmonics = 2,
   frequency = NULL,
   weekday.effect = FALSE,
-  keep.components = FALSE,
+  keep.components = TRUE,
   verbose = TRUE
 )
 }
 \arguments{
-\item{counts}{A data frame with dates, counts, and population size}
+\item{counts}{A data frame with dates, counts, and population size.}
 
-\item{exclude}{A list of dates to exclude when fitting the model}
+\item{exclude}{A list of dates to exclude when fitting the model. This is typically the period for which you will later estimate excess counts.}
 
 \item{include.trend}{Logical that determines if a slow trend is included in the model.}
 

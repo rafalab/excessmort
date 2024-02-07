@@ -42,7 +42,8 @@
 #' @export
 #' @import dplyr
 #' @importFrom stats qnorm sd
-#' @importFrom ggplot2 ggplot geom_ribbon ylab xlab geom_point coord_cartesian geom_line geom_errorbar
+#' @importFrom ggplot2 ggplot geom_ribbon ylab xlab geom_point coord_cartesian geom_line geom_errorbar labs
+#' @importFrom lubridate yday
 
 expected_diagnostic <- function(expected, 
                                 start  = NULL,
@@ -54,7 +55,7 @@ expected_diagnostic <- function(expected,
   if(!"compute_expected" %in% class(expected)) stop("The expected argument needs to be the output of the computed_expected function.")
   
   # -- Check if keep.components == TRUE
-  if(!"keep.components" %in% names(attributes(expected))) stop("The components were not found. Run the computed_expected function with keep.components = TRUE")
+  if(!attr(expected, "keep.components")) stop("The components were not found. Run the computed_expected function with keep.components = TRUE")
   
   # -- Check if the data frequency is daily or weekly
   if(!attr(expected$counts, "frequency") %in% c(365, 52, 12)) stop("This function assumes monthly, weekly or daily data. This dataset has ", attr(expected$counts, "frequency"), " counts per year.")
@@ -249,7 +250,7 @@ expected_diagnostic <- function(expected,
     scale_y_continuous(labels = scales::comma) +
     labs(y     = "Population",
          x     = "Date",
-         title = "Estimated Population Size")
+         title = "Population Size")
   
   # -- Add ons to poplation plot depending on the frequency
   if(attr(expected$counts, "frequency") %in% 365) {

@@ -7,13 +7,13 @@
 #' @param first_day First day to interpolate
 #' @param last_day Last day to interpolate.
 #' @param by Vector of column names to group by, for example different demographic strata
-#' 
+#' @param rule parameter sent to `approx` function. It is an integer (of length 1 or 2) describing how interpolation is to take place outside the interval [min(x), max(x)]. If rule is 1 then NAs are returned for such points and if it is 2, the value at the closest data extreme is used. Use, e.g., rule = 2:1, if the left and right side extrapolation should differ.
 #' @return A data frame with dates and population estimates.
 #' @export
 #' @importFrom stats approx
 #' @import dplyr
 #' 
-approx_demographics <- function(demo, first_day, last_day, by = "year")
+approx_demographics <- function(demo, first_day, last_day, by = "year", rule = 2)
 {
   ################## ----- PARAMETERS ----- ##################
   # 1. demo      : Dataframe from the function getDemographics()

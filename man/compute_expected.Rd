@@ -9,7 +9,7 @@ compute_expected(
   exclude = NULL,
   include.trend = TRUE,
   trend.knots.per.year = 1/7,
-  extrapolate = FALSE,
+  extrapolate = TRUE,
   harmonics = 2,
   frequency = NULL,
   weekday.effect = FALSE,
@@ -26,7 +26,7 @@ compute_expected(
 
 \item{trend.knots.per.year}{Number of knots per year used for the time trend}
 
-\item{extrapolate}{Logical that determines if the slow trend is extrapolated past the range of data used to fit.}
+\item{extrapolate}{Logical that determines if the slow trend is extrapolated past the range of data used to fit. This}
 
 \item{harmonics}{Number of harmonics to include in the seasonal effect}
 
@@ -50,11 +50,19 @@ estimated seasonal effect in the third and the estimated weekday effects in the 
 }
 \description{
 Compute the expected death count for each unit of time. 
-We assume counts are ovedsispersed Poisson distributed with a 
-trend that accounts for changes in death rate across time and a seasonal effect. The function take data frame with 
+We assume counts are over-dispersed Poisson distributed with a 
+trend that accounts for slow, year-to-year, changes in death rate across time and a seasonal effect. 
+The function takes a data frame with 
 dates and counts and returns the data frame with the expected counts as a new 
 column. It also returns a logical column that is `TRUE` if that entry was 
 used in the estimation procedure.
+}
+\details{
+Periods for which excess deaths will be estimated should be excluded when estimating expected counts. These can be supplied via the `exclude` argument. 
+Note that If `extrapolate` is `TRUE`, the default, the time trend will be extrapolated following the estimated trend. 
+If `extrapolate` is `FALSE` the trend is assumed to be a constant equal to the estimate on the last day before extrapolation.
+If the period for which excess deaths are estimated is long, extrapolation should be used with caution. 
+We highly recommend exploring the estimated expected counts with the `expected_diagnostics` function.
 }
 \examples{
 data(new_jersey_counts)

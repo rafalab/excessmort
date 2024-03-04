@@ -35,7 +35,7 @@
 #' 
 #' @export
 excess_cumulative <- function(fit, start, end){
-  if(!"curve_fit" %in% attr(fit, "type"))
+  if (!"curve_fit" %in% attr(fit, "type"))
     stop("This is not the correct excess_model fit, needs curve fit.")
 
   ind             <- which(fit$date %in% seq(start, end, by = "day"))

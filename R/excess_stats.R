@@ -1,10 +1,10 @@
 #' Excess counts in an interval
 #' 
-#' Helper funtion to compute excess deaths statistics for a
+#' Helper function to compute excess deaths statistics for a
 #' 
 #' @param start First day of interval
 #' @param end Last day of interval
-#' @param obs Observed coundes
+#' @param obs Observed counts
 #' @param mu Expected counts
 #' @param cov Covariance matrix for percent change
 #' @param pop Population size

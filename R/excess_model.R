@@ -3,7 +3,7 @@
 #' This function estimates the increase in the rate for a count time series relative to 
 #' the rate for a typical year. Two options are available: 1 - model the rate increase as a 
 #' smooth function and estimate this function or 2 - estimate the total excess in intervals. 
-#' For 1m an `event` date can be provided and a discontinuity included in the model.
+#' For 1 an `event` date can be provided and a discontinuity included in the model.
 #' You can do either 1 or 2 or both. 
 #' 
 #' Three versions of the model are available: 1 - Assume counts are Poisson distributed, 
@@ -13,7 +13,6 @@
 #' 
 #' If the `counts` object includes a `expected` column produced by `compute_expected` these are used
 #' as the expected counts. If not, then these are computed.
-#' 
 #' 
 #' @param counts A data frame with date, count and population columns.
 #' @param start First day of interval to which model will be fit
@@ -37,6 +36,8 @@
 #' @param epsilon Difference in deviance requried to declare covergenace of IRLS
 #' @param alpha Percentile used to define what is outside the normal range
 #' @param min.rate The estimated expected rate is not permited to go below this value
+#' @param keep.counts A logical that if `TRUE` forces the function to include the data used to fit the expected count model.
+#' @param keep.components A logical that if `TRUE` forces the function to return the estimated trend, seasonal model, and weekday effect, if included in the model. Ignored if expected counts already provided or `keep.counts` is `FALSE`.
 #' @param verbose Logical that determines if messages are displayed
 #' 
 #' @return If only `intervals` are provided a data frame with excess estimates described below for `excess`. 
@@ -104,13 +105,11 @@ excess_model <- function(counts,
                          epsilon = 1e-8,
                          alpha = 0.05,
                          min.rate = 0.0001,
+                         keep.counts = FALSE,
+                         keep.components = TRUE,
                          verbose = TRUE){
 
-  if ("compute_expected" %in% class(counts)) {
-    if (attr(counts, "keep.components")) {
-      counts <- counts$counts
-    }
-  } else{
+  if (!"compute_expected" %in% class(counts)) {
     if (verbose) message("Computing expected counts.")
     counts <-  compute_expected(counts,
                                 exclude = exclude,
@@ -119,7 +118,7 @@ excess_model <- function(counts,
                                 harmonics = harmonics,
                                 frequency = frequency,
                                 weekday.effect = weekday.effect,
-                                keep.components = FALSE,
+                                keep.components = keep.components,
                                 verbose = verbose)
   }
 
@@ -204,7 +203,7 @@ excess_model <- function(counts,
     nknots <- round(knots.per.year * as.numeric(max(date) - min(date)) / 365)
     knots <- x[round(seq(1, n, length = nknots + 2))]
     knots <- knots[-c(1, length(knots))]
-    if (!is.null(event)){
+    if (!is.null(event)) {
       event_index <- x[which.min(abs(as.numeric(date - event)))]
       i <- which.min(abs(knots - event_index))
       ##shift knots so that one of the internal knots falls on the event day
@@ -379,6 +378,10 @@ excess_model <- function(counts,
       attr(ret, "type") <- append(attr(ret, "type"), "excess")
     }
   }
+  attr(ret, "class") <-  append("excess_model", class(ret))
+  attr(ret, "keep.counts") <- keep.counts
+  if (keep.counts) ret$counts <- counts
+
   return(ret)
 }
 

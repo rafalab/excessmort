@@ -1,17 +1,25 @@
 #' Compute expected counts for each day
 #' 
 #' Compute the expected death count for each unit of time. 
-#' We assume counts are ovedsispersed Poisson distributed with a 
-#' trend that accounts for changes in death rate across time and a seasonal effect. The function take data frame with 
+#' We assume counts are over-dispersed Poisson distributed with a 
+#' trend that accounts for slow, year-to-year, changes in death rate across time and a seasonal effect. 
+#' The function takes a data frame with 
 #' dates and counts and returns the data frame with the expected counts as a new 
 #' column. It also returns a logical column that is `TRUE` if that entry was 
-#' used in the estimation procedure.
+#' used in the estimation procedure. 
+#' 
+#' Periods for which excess deaths will be estimated should be excluded when estimating expected counts. These can be supplied via the `exclude` argument. 
+#' Note that If `extrapolate` is `TRUE`, the default, the time trend will be extrapolated following the estimated trend. 
+#' If `extrapolate` is `FALSE` the trend is assumed to be a constant equal to the estimate on the last day before extrapolation.
+
+#' If the period for which excess deaths are estimated is long, extrapolation should be used with caution. 
+#' We highly recommend exploring the estimated expected counts with the `expected_diagnostics` function.
 #' 
 #' @param counts A data frame with dates, counts, and population size.
 #' @param exclude A list of dates to exclude when fitting the model. This is typically the period for which you will later estimate excess counts.
 #' @param include.trend Logical that determines if a slow trend is included in the model.
 #' @param trend.knots.per.year Number of knots per year used for the time trend
-#' @param extrapolate Logical that determines if the slow trend is extrapolated past the range of data used to fit.
+#' @param extrapolate Logical that determines if the slow trend is extrapolated past the range of data used to fit. This 
 #' @param harmonics Number of harmonics to include in the seasonal effect
 #' @param frequency Number of data points per year. If not provided, the function attempts to estimate it
 #' @param weekday.effect A logical that determines if a day of the week effect is included in the model
@@ -42,7 +50,7 @@ compute_expected <- function(counts,
                              exclude = NULL,
                              include.trend = TRUE,
                              trend.knots.per.year = 1/7,
-                             extrapolate = FALSE,
+                             extrapolate = TRUE,
                              harmonics = 2,
                              frequency = NULL,
                              weekday.effect = FALSE,
@@ -54,7 +62,7 @@ compute_expected <- function(counts,
 
   if (any(table(counts$date)) > 1) stop("Each date can appear at most once.")
 
-  if (any(c("expeceted", "excluded") %in% names(counts))) warning("expected and excluded columns will be overwritten.")
+  if (any(c("expected", "excluded") %in% names(counts))) warning("expected and excluded columns will be overwritten.")
 
   if (any(is.na(counts$date)) | any(is.na(counts$outcome)) | any(is.na(counts$population)))
     stop("No NAs permited in date, outcome, or population columns.")
@@ -108,7 +116,7 @@ compute_expected <- function(counts,
   if (verbose) message("Overall death rate is ", signif(sum(counts$outcome, na.rm = TRUE)/sum(counts$population, na.rm = TRUE)*frequency*1000, 3), ".")
 
   if (mean(counts$outcome, na.rm = TRUE) < 1)
-    warning("Average counts per unit of time is below 1.")
+    warning("Average counts per unit of time is below 1. Confidence intervals are based on asymptotic approxmations that might not hold.")
 
   ## build design matrix
   # convert dates to time
@@ -127,24 +135,17 @@ compute_expected <- function(counts,
   # make trend basis (includes intercept)
   if (include.trend) {
     
-    ttt <- tt
-    
-    if (!extrapolate) {
-      ttt[end_extrapolate_index] <- tt[last_index]  
-      ttt[start_extrapolate_index] <- tt[first_index]
-    }
-    
     # compute knots
     years <- (max(tt) - min(tt)) / 365
     nknots <- floor(years*trend.knots.per.year) + 1
-    knots <- seq(min(ttt), max(ttt), length = nknots)
+    knots <- seq(min(tt), max(tt), length = nknots)
     
     if (nknots > 2) {
       knots <- knots[-c(1, length(knots))]
-      x_t <- splines::ns(ttt, knots = knots, intercept = TRUE)
+      x_t <- splines::ns(tt, knots = knots, intercept = TRUE)
     } else{
       knots <- c()
-      x_t <- model.matrix(~ttt)
+      x_t <- model.matrix(~tt)
     } 
   } else{ ## just an intercept
     x_t <- matrix(1, nrow = length(tt))
@@ -183,10 +184,16 @@ compute_expected <- function(counts,
   dispersion <- pmax(1, summary(fit)$dispersion)
 
   # prepare stuff to return
+  if (!extrapolate) {
+    for (j in i_t) {
+      x[end_extrapolate_index,j] <- x[last_index,j]  
+      x[start_extrapolate_index,j] <- x[first_index,j]
+    }
+  }  
   expected <- exp(x %*% fit$coefficients) * n
-  cova            <- summary(fit)$cov.unscaled * dispersion
+  cova <- summary(fit)$cov.unscaled * dispersion
   log_expected_se <- apply(X = x, MARGIN = 1, function(xi){sqrt(t(xi) %*% cova %*% xi)})
-  counts          <- mutate(counts, log_expected_se = as.numeric(log_expected_se))
+  counts$log_expected_se = as.numeric(log_expected_se)
 
   counts <- mutate(counts, expected = as.numeric(expected), log_expected_se = as.numeric(log_expected_se), excluded = !index)
   attr(counts, "dispersion") <- dispersion
@@ -195,12 +202,19 @@ compute_expected <- function(counts,
   attr(counts, "harmonics") <- harmonics
   attr(counts, "frequency") <- frequency
   attr(counts, "weekday.effect") <- weekday.effect
-
+  
   if (keep.components) {
 
     seasonal <- data.frame(day = seq(1, 365, length = frequency),
                            s = exp(fourier_trend(seq(1, 365, length = frequency), k = harmonics) %*% fit$coefficients[i_h]) - 1)
-
+  
+    if (!extrapolate) {
+      for (j in 1:ncol(x_t)) {
+        x_t[end_extrapolate_index,j] <- x_t[last_index,j]  
+        x_t[start_extrapolate_index,j] <- x_t[first_index,j]
+      }
+    }  
+    
     trend <- as.numeric(exp(x_t %*% fit$coefficients[i_t])*frequency*1000)
 
     if (weekday.effect) {
@@ -211,18 +225,14 @@ compute_expected <- function(counts,
     } else{
       weekday <- NULL
     }
-
-    res <- list(counts = counts,
-                trend = trend,
-                seasonal = seasonal,
-                weekday = weekday)
-  } else{
-    res <- counts
+  
+    attr(counts, "components") <- list(trend = trend,
+                                    seasonal = seasonal,
+                                    weekday = weekday)
   }
+  attr(counts, "class") <-  append("compute_expected", class(counts))
+  attr(counts, "keep.components") <- keep.components
 
-  attr(res, "class") <-  append("compute_expected", class(res))
-  attr(res, "keep.components") <- keep.components
-
-  return(res)
+  return(counts)
 }
 

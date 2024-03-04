@@ -172,16 +172,15 @@ You can clearly see the effects of the COVID-19 epidemic. The dispersion paramet
 attr(counts, "dispersion")
 ```
 
-If you want to see the estimated components of the mean model you can use the `keep.components` argument:
+The `compute_expected` function returns the components of the model as the `components` attributed:
 
-```{r, fig.align="center", fig.width=6, fig.height=4}
-# -- Fitting mean model to data from Massachusetts and retaining mean model componentss
-res  <- cdc_state_counts %>% filter(state == "Massachusetts") %>%
-  compute_expected(exclude = exclude_dates,
-                   keep.components = TRUE)
+```{r}
+names(attr(counts, "components"))
 ```
 
-Then, you can explore the trend and seasonal component with the `expected_diagnostic` function:
+You can avoid returning these by setting `keep.components` to `FALSE` in the call to `compute_expected`.
+
+You can explore the trend and seasonal component with the `expected_diagnostic` function:
 
 ```{r, fig.align="center", fig.width=6, fig.height=4}
 # -- Creating diagnostic plots
@@ -245,16 +244,16 @@ cumulative_deaths  <- excess_cumulative(fit,
 # -- Visualizing cumulative excess deaths in MA
 cumulative_deaths %>%
   ggplot(aes(date)) +
-  geom_ribbon(aes(ymin = observed- 2*sd, ymax = observed + 2*sd), alpha = 0.5) +
+  geom_ribbon(aes(ymin = observed - 2*sd, ymax = observed + 2*sd), alpha = 0.5) +
   geom_line(aes(y = observed),
             color = "white",
             size  = 1) +
   geom_line(aes(y = observed)) +
   geom_point(aes(y = observed)) +
   scale_y_continuous(labels = scales::comma) +
-  labs(x        = "Date",
-       y        = "Cumulative excess deaths",
-       title    = "Cumulative Excess Deaths in MA",
+  labs(x = "Date",
+       y = "Cumulative excess deaths",
+       title = "Cumulative Excess Deaths in MA",
        subtitle = "During the first wave of Covid-19")
 ```
 
@@ -268,9 +267,7 @@ intervals <- list(flu = seq(make_date(2017, 12, 16), make_date(2018, 2, 10), by 
 # -- Getting excess death statistics from the excess models for the intervals of interest
 cdc_state_counts %>% 
   filter(state == "Massachusetts") %>%
-  excess_model(exclude        = exclude_dates,
-               interval       = intervals,
-               verbose        = FALSE)
+  excess_model(exclude = exclude_dates, intervals = intervals, verbose = FALSE)
 ```
 
 # Daily data
@@ -338,8 +335,8 @@ interval_start <- c(hurricane_dates[2],
                     Covid_19    = make_date(2020, 1, 1))
 
 # -- Days before and after the events of interest
-before <-c(365, 365, 365, 548)
-after <-c(365, 365, 365, 90)
+before <- c(365, 365, 365, 548)
+after <- c(365, 365, 365, 90)
 ```
 
 For this model we can include a discontinuity which we do for the hurricanes:
@@ -404,7 +401,7 @@ cumu <- do.call(rbind, cumu)
 cumu %>%
   mutate(day = as.numeric(date - event_day)) %>%
   ggplot(aes(color = event, 
-             fill  = event)) +
+             fill = event)) +
   geom_ribbon(aes(x    = day, 
                   ymin = fitted - 2*se, 
                   ymax = fitted + 2*se), 
@@ -418,8 +415,8 @@ cumu %>%
             size  = 1) +
   geom_line(aes(day, fitted)) +
   scale_y_continuous(labels = scales::comma) +
-  labs(x     = "Days since the start of the event",
-       y     = "Cumulaive excess deaths",
+  labs(x = "Days since the start of the event",
+       y = "Cumulaive excess deaths",
        title = "Cumulative Excess Mortality",
        color = "",
        fill  = "")

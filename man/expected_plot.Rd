@@ -16,7 +16,7 @@ expected_plot(
 )
 }
 \arguments{
-\item{expected}{The output from `excess_counts`}
+\item{expected}{The output from `compute_expected`}
 
 \item{title}{A title to add to plot}
 

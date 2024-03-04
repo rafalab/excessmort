@@ -2,7 +2,7 @@
 #' 
 #' Check mean model fit via diagnostic figures of the model components
 #' 
-#' @param expected The output from `excess_counts` with `keep.components = TRUE`
+#' @param expected The output from `compute_expected` with `keep.components = TRUE`
 #' @param start First day to show
 #' @param end Last day to show
 #' @param color Color for the expected curve
@@ -43,7 +43,7 @@
 #' @import dplyr
 #' @importFrom stats qnorm sd
 #' @importFrom ggplot2 ggplot geom_ribbon ylab xlab geom_point coord_cartesian geom_line geom_errorbar labs
-#' @importFrom lubridate yday
+#' @importFrom lubridate yday year
 
 expected_diagnostic <- function(expected, 
                                 start  = NULL,
@@ -52,23 +52,40 @@ expected_diagnostic <- function(expected,
                                 alpha  = 0.50){
   
   # -- Check that expected is a `compute_expected` object
-  if(!"compute_expected" %in% class(expected)) stop("The expected argument needs to be the output of the computed_expected function.")
+  if(!"compute_expected" %in% class(expected) & !"excess_model" %in% class(expected)){
+    stop("The expected argument needs to be the output of the computed_expected or excess_model functions.")  
+  }
+  
+  if("excess_model" %in% class(expected)){
+    if (!attr(expected, "keep.counts")) {
+      stop("The object does not include counts. You need to run excess_model with keep.counts = TRUE.")
+    } else{
+      expected <- expected$counts
+    }
+  }
+  
   
   # -- Check if keep.components == TRUE
-  if(!attr(expected, "keep.components")) stop("The components were not found. Run the computed_expected function with keep.components = TRUE")
+  if (!attr(expected, "keep.components")) {
+    if ("compute_expected" %in% class(expected)) {
+      stop("The components were not found. Run the computed_expected function with keep.components = TRUE")
+    } else{
+      stop("The components were not found. Run the excess_model function with keep.counts = TRUE and keep.components = TRUE")
+    }
+  }
   
   # -- Check if the data frequency is daily or weekly
-  if(!attr(expected$counts, "frequency") %in% c(365, 52, 12)) stop("This function assumes monthly, weekly or daily data. This dataset has ", attr(expected$counts, "frequency"), " counts per year.")
+  if (!attr(expected, "frequency") %in% c(365, 52, 12)) stop("This function assumes monthly, weekly or daily data. This dataset has ", attr(expected, "frequency"), " counts per year.")
   
   # -- We use ggplot for the figures
   requireNamespace("ggplot2")
   
   # -- If NULL, set start and end dates
-  if(is.null(start)) start <- min(expected$counts$date)
-  if(is.null(end))   end   <- max(expected$counts$date)
+  if(is.null(start)) start <- min(expected$date)
+  if(is.null(end))   end   <- max(expected$date)
   
   # -- Extracting data from the `expected` argument
-  dat <- with(expected$counts,
+  dat <- with(expected,
               tibble(date, 
                      outcome,
                      expected,
@@ -80,7 +97,7 @@ expected_diagnostic <- function(expected,
   avg <- mean(filter(dat, excluded == FALSE)$outcome)
   
   # -- Seasonal data: ensuring dimensions match 
-  if(attr(expected$counts, "frequency") %in% 365) {
+  if (attr(expected, "frequency") %in% 365) {
     seasonal_dat <- dat %>%
       filter(excluded == FALSE) %>%
       group_by(yday(date)) %>%
@@ -88,28 +105,30 @@ expected_diagnostic <- function(expected,
       ungroup() %>%
       setNames(c("t", "avg_outcome")) %>%
       filter(t != 366)
-    
-  } else if(attr(expected$counts, "frequency") %in% 52) {
-    seasonal_dat <- dat %>%
-      filter(excluded == FALSE) %>%
-      group_by(week(date)) %>%
-      summarize(avg_outcome = mean(outcome)) %>%
-      ungroup() %>%
-      setNames(c("t", "avg_outcome")) %>%
-      filter(t != 53)
-    
-  } else if(attr(expected$counts, "frequency") %in% 12) {
-    seasonal_dat <- dat %>%
-      filter(excluded == FALSE) %>%
-      group_by(month(date)) %>%
-      summarize(avg_outcome = mean(outcome)) %>%
-      ungroup() %>%
-      setNames(c("t", "avg_outcome"))
+  } else{
+    if (attr(expected, "frequency") %in% 52) {
+      seasonal_dat <- dat %>%
+        filter(excluded == FALSE) %>%
+        group_by(week(date)) %>%
+        summarize(avg_outcome = mean(outcome)) %>%
+        ungroup() %>%
+        setNames(c("t", "avg_outcome")) %>%
+        filter(t != 53)
+    } else{
+      if (attr(expected, "frequency") %in% 12) {
+        seasonal_dat <- dat %>%
+          filter(excluded == FALSE) %>%
+          group_by(month(date)) %>%
+          summarize(avg_outcome = mean(outcome)) %>%
+          ungroup() %>%
+          setNames(c("t", "avg_outcome"))
+      }
+    }
   }
   
   # -- Seasonal viz
   p_seasonal <- seasonal_dat %>%
-    mutate(s = expected$seasonal$s) %>%
+    mutate(s = attr(expected, "components")$seasonal$s) %>%
     ggplot(aes(t, avg_outcome)) +
     geom_point(alpha = alpha) +
     geom_line(aes(t, (s + 1) * avg), 
@@ -121,14 +140,15 @@ expected_diagnostic <- function(expected,
          title = "Seasonal Component")
   
   # -- Extracting the trend component
-  trend <- tibble(date = expected$counts$date, trend = expected$trend) %>%
+  trend <- tibble(date = expected$date, 
+                  trend = attr(expected, "components")$trend) %>%
     left_join(select(dat, date, population), by = "date")
   
   # -- Getting yearly average death counts
   trend_obs <- dat %>%
     mutate(year = year(date)) %>%
     group_by(year) %>%
-    summarize(outcome = mean(outcome)) %>%
+    summarize(outcome = sum(outcome)/mean(population)*1000) %>%
     ungroup() %>%
     mutate(date = lubridate::make_date(year, 07, 01))
   
@@ -142,22 +162,22 @@ expected_diagnostic <- function(expected,
                size  = 3,
                pch   = 1,
                data  = trend_obs) +
-    geom_line(aes(date, trend * population / (1000 * attr(expected$counts, "frequency"))), 
+    geom_line(aes(date, trend), 
               color = color, 
               size  = 0.80,
               data  = trend) +
     scale_y_continuous(labels = scales::comma) +
     labs(x = "Date",
-         y = "Counts",
+         y = "Mortality rate (per 1,000)",
          title = "Long-term trend")
   
   # -- If weekday.effect = TRUE, then generate the figure
-  if(attr(expected$counts, "weekday.effect")){
+  if(attr(expected, "weekday.effect")){
     
     # -- Wrangling weekday data
     weekday_dat <- dat %>%
       mutate(wday = wday(date)) %>%
-      left_join(expected$weekday, by = c("wday" = "weekday")) %>%
+      left_join(attr(expected, "components")$weekday, by = c("wday" = "weekday")) %>%
       mutate(effect = avg * (1 + effect),
              wday   = wday(date, label = TRUE))
     
@@ -207,7 +227,7 @@ expected_diagnostic <- function(expected,
   }
   
   # -- Mean viz
-  p_mean <- expected$counts %>%
+  p_mean <- expected %>%
     filter(date >= start & date <= end) %>%
     mutate(lwr = exp(log(expected) - 2 * log_expected_se),
            upr = exp(log(expected) + 2 * log_expected_se)) %>%
@@ -225,7 +245,7 @@ expected_diagnostic <- function(expected,
          title = "Expected Mortality Counts")
   
   # -- Residual viz
-  p_residual <- expected$counts %>%
+  p_residual <- expected %>%
     filter(date >= start & date <= end) %>%
     mutate(difference  = outcome - expected,
            expected_se = expected * log_expected_se,
@@ -253,7 +273,7 @@ expected_diagnostic <- function(expected,
          title = "Population Size")
   
   # -- Add ons to poplation plot depending on the frequency
-  if(attr(expected$counts, "frequency") %in% 365) {
+  if(attr(expected, "frequency") %in% 365) {
     p_population <- p_population +
       geom_point(aes(date, population), 
                  size  = 2,
@@ -261,7 +281,7 @@ expected_diagnostic <- function(expected,
                  color = "black",
                  fill  = color,
                  data  = filter(dat, month(date) == 7, day(date) == 1, date >= start, date <= end))
-  } else if(attr(expected$counts, "frequency") %in% 52) {
+  } else if(attr(expected, "frequency") %in% 52) {
     p_population <- p_population +
       geom_point(aes(date, population), 
                  size  = 2,
@@ -269,7 +289,7 @@ expected_diagnostic <- function(expected,
                  color = "black",
                  fill  = color,
                  data  = filter(dat, week(date)==26, date >= start & date <= end))
-  } else if(attr(expected$counts, "frequency") %in% 12) {
+  } else if(attr(expected, "frequency") %in% 12) {
     p_population <- p_population +
       geom_point(aes(date, population), 
                  size  = 2,

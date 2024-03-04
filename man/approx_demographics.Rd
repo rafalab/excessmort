@@ -4,7 +4,7 @@
 \alias{approx_demographics}
 \title{Interpolate demographic data}
 \usage{
-approx_demographics(demo, first_day, last_day, by = "year")
+approx_demographics(demo, first_day, last_day, by = "year", rule = 2)
 }
 \arguments{
 \item{demo}{A data frame with the yearly population estimates}
@@ -14,6 +14,8 @@ approx_demographics(demo, first_day, last_day, by = "year")
 \item{last_day}{Last day to interpolate.}
 
 \item{by}{Vector of column names to group by, for example different demographic strata}
+
+\item{rule}{parameter sent to `approx` function. It is an integer (of length 1 or 2) describing how interpolation is to take place outside the interval [min(x), max(x)]. If rule is 1 then NAs are returned for such points and if it is 2, the value at the closest data extreme is used. Use, e.g., rule = 2:1, if the left and right side extrapolation should differ.}
 }
 \value{
 A data frame with dates and population estimates.

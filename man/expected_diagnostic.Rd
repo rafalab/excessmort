@@ -13,7 +13,7 @@ expected_diagnostic(
 )
 }
 \arguments{
-\item{expected}{The output from `excess_counts` with `keep.components = TRUE`}
+\item{expected}{The output from `compute_expected` with `keep.components = TRUE`}
 
 \item{start}{First day to show}
 

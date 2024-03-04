@@ -22,7 +22,7 @@ excess_stats(
 
 \item{end}{Last day of interval}
 
-\item{obs}{Observed coundes}
+\item{obs}{Observed counts}
 
 \item{mu}{Expected counts}
 
@@ -39,5 +39,5 @@ excess_stats(
 \item{betacov}{Covariance matrix for parameter estimates used to estimate fhat}
 }
 \description{
-Helper funtion to compute excess deaths statistics for a
+Helper function to compute excess deaths statistics for a
 }

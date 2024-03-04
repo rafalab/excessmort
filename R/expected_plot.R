@@ -2,7 +2,7 @@
 #' 
 #' Check if expected counts fit data
 #' 
-#' @param expected The output from `excess_counts`
+#' @param expected The output from `compute_expected`
 #' @param title A title to add to plot
 #' @param start First day to show
 #' @param end Last day to show
@@ -38,15 +38,19 @@ expected_plot <- function(expected,
                           alpha=0.50){
 
   # -- Checking class compute_expected
-  if(!"compute_expected" %in% class(expected)) stop("The expected argument needs to be the output of the computed_expected function.")  
-  
-  # -- Checking frequency 
-  if(attr(expected, "keep.components")) { 
-    if(!attr(expected$counts, "frequency") %in% c(365, 52, 12)) warning("This function assumes monthly, weekly or daily data. This dataset has ", attr(expected$counts, "frequency"), "counts per year.") 
-    expected = expected$counts
-  } else {
-    if(!attr(expected, "frequency") %in% c(365, 52, 12)) warning("This function assumes monthly, weekly or daily data. This dataset has ", attr(expected$counts, "frequency"), "counts per year.")
+  if (!"compute_expected" %in% class(expected) & !"excess_model" %in% class(expected)) {
+    stop("The expected argument needs to be the output of the computed_expected or excess_model functions.")  
   }
+  
+  if("excess_model" %in% class(expected)){
+    if (!attr(expected, "keep.counts")) {
+      stop("The object does not include counts. You need to run excess_model with keep.counts = TRUE.")
+    } else{
+      expected <- expected$counts
+    }
+  }
+  # -- Checking frequency 
+  if (!attr(expected, "frequency") %in% c(365, 52, 12)) warning("This function assumes monthly, weekly or daily data. This dataset has ", attr(expected$counts, "frequency"), "counts per year.")
   
   requireNamespace("ggplot2")
 

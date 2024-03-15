@@ -81,8 +81,8 @@ expected_diagnostic <- function(expected,
   requireNamespace("ggplot2")
   
   # -- If NULL, set start and end dates
-  if(is.null(start)) start <- min(expected$date)
-  if(is.null(end))   end   <- max(expected$date)
+  if (is.null(start)) start <- min(expected$date)
+  if (is.null(end))   end   <- max(expected$date)
   
   # -- Extracting data from the `expected` argument
   dat <- with(expected,
@@ -145,10 +145,11 @@ expected_diagnostic <- function(expected,
     left_join(select(dat, date, population), by = "date")
   
   # -- Getting yearly average death counts
+  the_freq <- attr(expected, "frequency")
   trend_obs <- dat %>%
     mutate(year = year(date)) %>%
     group_by(year) %>%
-    summarize(outcome = sum(outcome)/mean(population)*1000) %>%
+    summarize(outcome = mean(outcome)/mean(population)*1000*the_freq) %>%
     ungroup() %>%
     mutate(date = lubridate::make_date(year, 07, 01))
   

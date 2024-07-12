@@ -5,7 +5,7 @@
 \alias{puerto_rico_counts}
 \title{Puerto Rico daily mortality}
 \format{
-An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 312914 rows and 5 columns.
+An object of class \code{data.table} (inherits from \code{data.frame}) with 499644 rows and 5 columns.
 }
 \usage{
 data("puerto_rico_counts")

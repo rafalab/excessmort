@@ -1,10 +1,11 @@
 Package: excessmort
 Type: Package
 Title: Excess Mortality
-Version: 0.7.0
+Version: 0.8.1
 Authors@R: c(person(c("Rafael", "A."), "Irizarry", email = "rafael_irizarry@dfci.harvard.edu",
                   role = c("aut", "cre")),
              person("Rolando", "Acosta", role = "aut"),
+             person("Mónica", "Robles-Fontán", role = "aut"),
              person("Ferenci", "Tamás", role = "ctb"))
 Depends: R (>= 3.5.0),
 Imports: stats,

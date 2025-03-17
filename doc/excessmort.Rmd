@@ -153,11 +153,12 @@ The `compute_expected` function returns another count data table but with expect
 # -- Fitting mean model to data from Massachusetts
 counts <- cdc_state_counts %>% 
   filter(state == "Massachusetts") %>%
-  compute_expected(exclude = exclude_dates)
+  compute_expected(exclude = exclude_dates, include.trend = FALSE)
 
 kable(counts[1:6,])
 ```
 
+We use `include.trend = FALSE` because this is less than five years of data.
 You can make a quick plot showing the expected and observed data using the `expected_plot` function:
 
 ```{r, fig.align="center", fig.width=6, fig.height=4}
@@ -184,7 +185,7 @@ You can explore the trend and seasonal component with the `expected_diagnostic` 
 
 ```{r, fig.align="center", fig.width=6, fig.height=4}
 # -- Creating diagnostic plots
-mean_diag <- expected_diagnostic(res)
+mean_diag <- expected_diagnostic(counts)
 
 # -- Trend component
 mean_diag$trend
@@ -214,6 +215,7 @@ fit <- cdc_state_counts %>%
                start = min(.$date),
                end = max(.$date),
                knots.per.year = 12,
+               include.trend = FALSE,
                verbose = FALSE)
 ```
 
@@ -267,7 +269,8 @@ intervals <- list(flu = seq(make_date(2017, 12, 16), make_date(2018, 2, 10), by 
 # -- Getting excess death statistics from the excess models for the intervals of interest
 cdc_state_counts %>% 
   filter(state == "Massachusetts") %>%
-  excess_model(exclude = exclude_dates, intervals = intervals, verbose = FALSE)
+  excess_model(exclude = exclude_dates, intervals = intervals, 
+               include.trend = FALSE, verbose = FALSE)
 ```
 
 # Daily data
@@ -292,7 +295,7 @@ counts <- collapse_counts_by_age(puerto_rico_counts,
                                  breaks = c(0, 5, 20, 40, 60, 75, Inf)) %>%
   group_by(date, agegroup) %>%
   summarize(population = sum(population),
-            outcome    = sum(outcome)) %>%
+            outcome    = sum(outcome), .groups = "drop") %>%
   ungroup()
 ```
 
@@ -336,7 +339,7 @@ interval_start <- c(hurricane_dates[2],
 
 # -- Days before and after the events of interest
 before <- c(365, 365, 365, 548)
-after <- c(365, 365, 365, 90)
+after <- c(365, 365, 365, 650)
 ```
 
 For this model we can include a discontinuity which we do for the hurricanes:
@@ -392,7 +395,7 @@ ndays <- 365
 cumu <- lapply(seq_along(interval_start), function(i){
       excess_cumulative(f[[i]],
                       start = interval_start[i],
-                      end = pmin(make_date(2020, 3, 31), interval_start[i] + ndays)) %>%
+                      end = interval_start[i] + ndays) %>%
       mutate(event_day = interval_start[i], event = names(interval_start)[i])
 })
 cumu <- do.call(rbind, cumu)

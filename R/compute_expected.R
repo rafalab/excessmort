@@ -136,13 +136,14 @@ compute_expected <- function(counts,
   if (include.trend) {
     
     # compute knots
-    years <- (max(tt) - min(tt)) / 365
+    # we use linear extrapolation outside the range of count$date
+    years <- (max(tt[index]) - min(tt[index])) / 365
     nknots <- floor(years*trend.knots.per.year) + 1
-    knots <- seq(min(tt), max(tt), length = nknots)
+    knots <- seq(min(tt[index]), max(tt[index]), length = nknots)
     
     if (nknots > 2) {
       knots <- knots[-c(1, length(knots))]
-      x_t <- splines::ns(tt, knots = knots, intercept = TRUE)
+      x_t <- splines::ns(tt, knots = knots, intercept = TRUE, Boundary.knots = c(min(tt[index]), max(tt[index])))
     } else{
       knots <- c()
       x_t <- model.matrix(~tt)

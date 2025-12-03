@@ -78,7 +78,7 @@ expected_plot <- function(expected,
   p <- dat %>%
     ggplot(aes(x = date)) +
     geom_point(aes(y = observed), alpha = alpha) +
-    geom_line(aes(y = expected), size=0.70, color = color) +
+    geom_line(aes(y = expected), linewidth=0.70, color = color) +
     ylab(yl) +
     scale_y_continuous(labels = scales::comma) +
     scale_x_date(date_labels = "%b %Y") +

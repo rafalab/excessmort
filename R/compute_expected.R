@@ -206,8 +206,12 @@ compute_expected <- function(counts,
   
   if (keep.components) {
 
+    log_seasonal <- fourier_trend(seq(1, 365, length = frequency), k = harmonics) %*% fit$coefficients[i_h]
+    log_seasonal_se <- apply(X = fourier_trend(seq(1, 365, length = frequency), k = harmonics), MARGIN = 1, function(xi){
+      sqrt(t(xi) %*% cova[i_h, i_h, drop = FALSE] %*% xi)
+    })
     seasonal <- data.frame(day = seq(1, 365, length = frequency),
-                           s = exp(fourier_trend(seq(1, 365, length = frequency), k = harmonics) %*% fit$coefficients[i_h]) - 1)
+                           s = exp(log_seasonal) - 1)
   
     if (!extrapolate) {
       for (j in 1:ncol(x_t)) {
@@ -216,20 +220,28 @@ compute_expected <- function(counts,
       }
     }  
     
-    trend <- as.numeric(exp(x_t %*% fit$coefficients[i_t])*frequency*1000)
-
+    log_trend <- as.numeric(x_t %*% fit$coefficients[i_t])
+    log_trend_se <- apply(X = x_t, MARGIN = 1, function(xti) {sqrt(t(xti) %*% cova[i_t, i_t, drop = FALSE] %*% xti)}) 
+    trend <- exp(log_trend)*frequency*1000
+    
     if (weekday.effect) {
       w <- factor(1:7)
       contrasts(w) <- contr.sum(length(levels(w)), contrasts = TRUE)
-      weekday <- data.frame(weekday = 1:7,
-                            effect = exp(model.matrix(~w)[, -1] %*% fit$coefficients[i_w]) - 1)
+      log_weekday <- model.matrix(~w)[, -1] %*% fit$coefficients[i_w]
+      log_weekday_se <- apply(X = model.matrix(~w)[, -1], MARGIN = 1, function(wi) {sqrt(t(wi) %*% cova[i_w, i_w, drop = FALSE] %*% wi)})
+      weekday <- data.frame(weekday = 1:7, effect = exp(log_weekday) - 1)
     } else{
+      log_weekday <- NULL
+      log_weekday_se <- NULL
       weekday <- NULL
     }
   
     attr(counts, "components") <- list(trend = trend,
                                     seasonal = seasonal,
-                                    weekday = weekday)
+                                    weekday = weekday,
+                                    log_trend = log_trend, log_trend_se = log_trend_se,
+                                    log_seasonal = log_seasonal, log_seasonal_se = log_seasonal_se,
+                                    log_weekday = log_weekday, log_weekday_se = log_weekday_se)
   }
   attr(counts, "class") <-  append("compute_expected", class(counts))
   attr(counts, "keep.components") <- keep.components

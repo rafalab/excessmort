@@ -100,7 +100,7 @@ expected_diagnostic <- function(expected,
   if (attr(expected, "frequency") %in% 365) {
     seasonal_dat <- dat %>%
       filter(excluded == FALSE) %>%
-      group_by(yday(date)) %>%
+      group_by(lubridate::yday(date)) %>%
       summarize(avg_outcome = mean(outcome)) %>%
       ungroup() %>%
       setNames(c("t", "avg_outcome")) %>%
@@ -118,7 +118,7 @@ expected_diagnostic <- function(expected,
       if (attr(expected, "frequency") %in% 12) {
         seasonal_dat <- dat %>%
           filter(excluded == FALSE) %>%
-          group_by(month(date)) %>%
+          group_by(lubridate::month(date)) %>%
           summarize(avg_outcome = mean(outcome)) %>%
           ungroup() %>%
           setNames(c("t", "avg_outcome"))
@@ -133,7 +133,7 @@ expected_diagnostic <- function(expected,
     geom_point(alpha = alpha) +
     geom_line(aes(t, (s + 1) * avg), 
               color = color, 
-              size  = 0.80) +
+              linewidth  = 0.80) +
     scale_y_continuous(labels = scales::comma) +
     labs(x = "Days of the year",
          y = "Counts",
@@ -147,7 +147,7 @@ expected_diagnostic <- function(expected,
   # -- Getting yearly average death counts
   the_freq <- attr(expected, "frequency")
   trend_obs <- dat %>%
-    mutate(year = year(date)) %>%
+    mutate(year = lubridate::year(date)) %>%
     group_by(year) %>%
     summarize(outcome = mean(outcome)/mean(population)*1000*the_freq) %>%
     ungroup() %>%
@@ -165,7 +165,7 @@ expected_diagnostic <- function(expected,
                data  = trend_obs) +
     geom_line(aes(date, trend), 
               color = color, 
-              size  = 0.80,
+              linewidth = 0.80,
               data  = trend) +
     scale_y_continuous(labels = scales::comma) +
     labs(x = "Date",
@@ -177,15 +177,15 @@ expected_diagnostic <- function(expected,
     
     # -- Wrangling weekday data
     weekday_dat <- dat %>%
-      mutate(wday = wday(date)) %>%
+      mutate(wday = lubridate::wday(date)) %>%
       left_join(attr(expected, "components")$weekday, by = c("wday" = "weekday")) %>%
       mutate(effect = avg * (1 + effect),
-             wday   = wday(date, label = TRUE))
+             wday   = lubridate::wday(date, label = TRUE))
     
     # -- Wrangling average weekday data
     weekday_avg_dat <- dat %>%
       filter(excluded == FALSE) %>%
-      mutate(wday = wday(date, label = TRUE)) %>%
+      mutate(wday = lubridate::wday(date, label = TRUE)) %>%
       group_by(wday) %>%
       summarize(se      = sd(outcome) / sqrt(n()), 
                 outcome = mean(outcome)) %>%
@@ -239,7 +239,7 @@ expected_diagnostic <- function(expected,
                 fill  = color, alpha = 0.5) +
     geom_line(aes(date, expected), 
               color = color,
-              size  = 0.80) +
+              linewidth  = 0.80) +
     scale_y_continuous(labels = scales::comma) +
     labs(x = "Date",
          y = "Counts",
@@ -259,7 +259,7 @@ expected_diagnostic <- function(expected,
                 fill  = color, alpha = 0.5) +
     geom_line(aes(date, 0),
               color = color,
-              size  = 0.80) +
+              linewidth  = 0.80) +
     scale_y_continuous(labels = scales::comma) +
     labs(x = "Date",
          y = "Observed - expected",
@@ -267,7 +267,7 @@ expected_diagnostic <- function(expected,
   
   # -- Population plot
   p_population <- ggplot(aes(date, population), data = filter(dat, date >= start & date <= end)) +
-    geom_line(size = 0.80) +
+    geom_line(linewidth = 0.80) +
     scale_y_continuous(labels = scales::comma) +
     labs(y     = "Population",
          x     = "Date",
@@ -281,7 +281,7 @@ expected_diagnostic <- function(expected,
                  shape = 21,
                  color = "black",
                  fill  = color,
-                 data  = filter(dat, month(date) == 7, day(date) == 1, date >= start, date <= end))
+                 data  = filter(dat, lubridate::month(date) == 7, lubridate::day(date) == 1, date >= start, date <= end))
   } else if(attr(expected, "frequency") %in% 52) {
     p_population <- p_population +
       geom_point(aes(date, population), 
@@ -297,7 +297,7 @@ expected_diagnostic <- function(expected,
                  shape = 21,
                  color = "black",
                  fill  = color,
-                 data  = filter(dat, month(date)==7, date >= start & date <= end))
+                 data  = filter(dat, lubridate::month(date)==7, date >= start & date <= end))
   }
   
   # -- To return

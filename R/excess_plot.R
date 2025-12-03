@@ -57,5 +57,5 @@ excess_plot <- function(fit,
 
   if(!is.null(ylim)) p <- p + coord_cartesian(ylim = ylim)
 
-  return(p + geom_line(aes(y = increase), size=0.70, col="#3366FF"))
+  return(p + geom_line(aes(y = increase), linewidth = 0.70, col="#3366FF"))
 }
